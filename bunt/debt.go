@@ -8,8 +8,11 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
-const indexDebt = "debts"
-const prefixDebt = "debt::"
+const prefixDebt = "debt"
+
+func indexDebt(groupID model.GroupID) string {
+	return fmt.Sprintf("%s%s%d", prefixDebt, sep, int(groupID))
+}
 
 type debtRepository struct {
 	db *buntdb.DB
@@ -28,7 +31,7 @@ func NewDebtRepository(dbName string) (model.DebtRepository, error) {
 func (r *debtRepository) FindAll(groupID model.GroupID) ([]*model.Debt, error) {
 	_ = r.db.View(func(tx *buntdb.Tx) error {
 		// tx.CreateIndex(debts, )
-		tx.Ascend(indexDebt, func(key, value string) bool {
+		tx.Ascend(indexDebt(groupID), func(key, value string) bool {
 			return true
 		})
 		return nil
@@ -63,6 +66,11 @@ func (r *debtRepository) Store(debt *model.Debt) error {
 		_, _, err = tx.Set(wrpdDebt.Key(), value, nil)
 		return err
 	})
+}
+
+func (r *debtRepository) NextID(groupID model.GroupID) (model.DebtID, error) {
+	// NYI
+	return 0, nil
 }
 
 func parseDebt(rawDebt string) (*model.Debt, error) {

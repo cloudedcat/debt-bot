@@ -2,8 +2,12 @@ package model
 
 import "time"
 
-// Currency is unused for now type
+// Currency - NYI
 type Currency string
+
+// DebtID is a custom type for identifying DebtID entity.
+// ID generating should be provided debt repository.
+type DebtID int
 
 // Debt represents a debt. The main entity in the domain.
 type Debt struct {
@@ -14,18 +18,14 @@ type Debt struct {
 	Borrower ParticipantID
 	Lender   ParticipantID
 	Date     time.Time
-	// Reserved fields for future purposes
+	// Fields reserved for future purposes
 	Currency Currency
 }
-
-// func New() {
-
-// }
 
 // DebtRepository provides access to a debt store.
 type DebtRepository interface {
 	FindAll(groupID GroupID) ([]*Debt, error)
 	Find(groupID GroupID, id int) (*Debt, error)
 	Store(debt *Debt) error
-	// NextID(chatID ChatID) (int, error)
+	NextID(groupID GroupID) (DebtID, error)
 }
