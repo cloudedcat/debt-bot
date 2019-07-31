@@ -6,6 +6,8 @@ import (
 	"github.com/cloudedcat/finance-bot/model"
 )
 
+var testGroupID model.GroupID = 42
+
 func testGroupRepository(t *testing.T) model.GroupRepository {
 	repo, err := Open(":memory:")
 	if err != nil {

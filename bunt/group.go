@@ -44,10 +44,12 @@ func (r *groupRepository) Find(id model.GroupID) (*model.Group, error) {
 
 func (r *groupRepository) Store(group *model.Group) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
-		index := indexDebt(group.ID)
-		pattern := index
-		if err := tx.CreateIndex(index, pattern); err != nil {
-			return err
+		indexes := []string{indexDebt(group.ID), indexParticipant(group.ID)}
+		for _, index := range indexes {
+			pattern := index
+			if err := tx.CreateIndex(index, pattern); err != nil {
+				return err
+			}
 		}
 		composedGroup, err := composeGroup(group)
 		if err != nil {

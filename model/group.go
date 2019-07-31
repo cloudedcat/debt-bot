@@ -17,7 +17,6 @@ func BuildGroup(id GroupID) *Group {
 
 // GroupRepository provides access to a group store.
 type GroupRepository interface {
-	// FindAll(groupID GroupID) ([]*Participant, error)
 	Find(groupID GroupID) (*Group, error)
 	Store(group *Group) error
 	// NextID(chatID ChatID) (int, error)
