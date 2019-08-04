@@ -19,12 +19,7 @@ type debtRepository struct {
 }
 
 // NewDebtRepository returns new instance of a BuntDB debt repository
-func NewDebtRepository(dbName string) (model.DebtRepository, error) {
-	db, err := buntdb.Open(dbName)
-	if err != nil {
-		return nil, err
-	}
-
+func NewDebtRepository(db *buntdb.DB) (model.DebtRepository, error) {
 	return &debtRepository{db: db}, nil
 }
 

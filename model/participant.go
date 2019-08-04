@@ -2,6 +2,8 @@ package model
 
 // ParticipantID it's
 type ParticipantID int
+
+// Alias is Telegram nickname started with @
 type Alias string
 
 // Participant represents person who take part in sharing debts
@@ -14,9 +16,8 @@ type Participant struct {
 
 // ParticipantRepository provides access to a participant store.
 type ParticipantRepository interface {
-	// FindAll(groupID GroupID) ([]*Participant, error)
+	FindAll(groupID GroupID) ([]*Participant, error)
 	Find(groupID GroupID, id ParticipantID) (*Participant, error)
 	// FindByAlias(groupID GroupID, alias Alias) (*Participant, error)
 	Store(groupID GroupID, participant *Participant) error
-	// NextID(chatID ChatID) (int, error)
 }

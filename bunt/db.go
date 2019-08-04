@@ -1,6 +1,7 @@
 package bunt
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/tidwall/buntdb"
@@ -22,7 +23,7 @@ func Open(path string) (*buntdb.DB, error) {
 	}
 	// If the database is just created then add necessary indexes
 	err = db.Update(func(tx *buntdb.Tx) error {
-		return tx.CreateIndex(indexGroup, prefixGroup)
+		return tx.CreateIndex(indexGroup, patternByIndex(indexGroup), buntdb.IndexJSON("ID"))
 	})
 
 	if err != nil {
@@ -39,4 +40,8 @@ func doesDBExist(path string) bool {
 
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
+}
+
+func patternByIndex(index string) string {
+	return fmt.Sprintf("%s%s*", index, sep)
 }

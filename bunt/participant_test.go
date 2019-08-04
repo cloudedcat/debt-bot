@@ -1,17 +1,16 @@
 package bunt
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/cloudedcat/finance-bot/model"
+	"github.com/google/go-cmp/cmp"
+	"github.com/tidwall/buntdb"
 )
 
-func testParticipantRepository(t *testing.T) model.ParticipantRepository {
-	db, err := Open(":memory:")
-	if err != nil {
-		t.Fatal(err)
-	}
-	return NewParticipantRepository(db)
+func testParticipantRepository(t *testing.T, conn *buntdb.DB) model.ParticipantRepository {
+	return NewParticipantRepository(conn)
 }
 
 var testParticipants = []*model.Participant{
@@ -24,13 +23,36 @@ var testParticipants = []*model.Participant{
 
 func uploadTestParticipants(t *testing.T, groupID model.GroupID, repo model.ParticipantRepository) {
 	for _, partic := range testParticipants {
-		if err := repo.Store(groupID, partic); err != nil {
-			t.Fatal(err)
-		}
+		err := repo.Store(groupID, partic)
+		failOnError(t, err, fmt.Sprintf("failed to load participant: %v", partic.ID))
 	}
 }
 
 func TestParticipantStoreFind(t *testing.T) {
-	repo := testParticipantRepository(t)
+	db := testOpen(t)
+	gRepo, repo := NewGroupRepository(db), NewParticipantRepository(db)
+	uploadTestGroup(t, model.BuildGroup(testGroupID), gRepo)
 	uploadTestParticipants(t, testGroupID, repo)
+	expected := testParticipants[len(testParticipants)/2]
+
+	got, err := repo.Find(testGroupID, expected.ID)
+
+	failOnError(t, err, "repository error")
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("Debt mismatch (-expected, +got):\n%s", diff)
+	}
+}
+
+func TestParticipantFindAll(t *testing.T) {
+	db := testOpen(t)
+	gRepo, repo := NewGroupRepository(db), NewParticipantRepository(db)
+	uploadTestGroup(t, model.BuildGroup(testGroupID), gRepo)
+	uploadTestParticipants(t, testGroupID, repo)
+	expected := testParticipants
+
+	got, err := repo.FindAll(testGroupID)
+	failOnError(t, err, "repository error")
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("Debt mismatch (-expected, +got):\n%s", diff)
+	}
 }

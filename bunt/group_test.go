@@ -1,6 +1,7 @@
 package bunt
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/cloudedcat/finance-bot/model"
@@ -16,6 +17,11 @@ func testGroupRepository(t *testing.T) model.GroupRepository {
 	return &groupRepository{db: repo}
 }
 
+func uploadTestGroup(t *testing.T, group *model.Group, repo model.GroupRepository) {
+	err := repo.Store(group)
+	failOnError(t, err, fmt.Sprintf("failed to store group %v", group))
+}
+
 func TestGroupStoreFind(t *testing.T) {
 	repo := testGroupRepository(t)
 	var expectedGroups []*model.Group
@@ -23,8 +29,7 @@ func TestGroupStoreFind(t *testing.T) {
 	for i := 1; i < 6; i++ {
 		newG := model.BuildGroup(model.GroupID(i))
 		expectedGroups = append(expectedGroups, newG)
-		err := repo.Store(newG)
-		failOnError(t, err, "failed to store group")
+		uploadTestGroup(t, newG, repo)
 	}
 
 	for _, group := range expectedGroups {
@@ -36,11 +41,5 @@ func TestGroupStoreFind(t *testing.T) {
 	unexpectedGroupID := model.GroupID(42)
 	if _, err := repo.Find(unexpectedGroupID); err == nil {
 		t.Fatalf("Find should return err but got nil")
-	}
-}
-
-func failOnError(t *testing.T, err error, context string) {
-	if err != nil {
-		t.Fatalf("%s: %v", context, err)
 	}
 }

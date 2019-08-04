@@ -9,7 +9,6 @@ import (
 )
 
 const indexGroup = "group"
-
 const prefixGroup = indexGroup + sep
 
 type groupRepository struct {
@@ -46,8 +45,8 @@ func (r *groupRepository) Store(group *model.Group) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
 		indexes := []string{indexDebt(group.ID), indexParticipant(group.ID)}
 		for _, index := range indexes {
-			pattern := index
-			if err := tx.CreateIndex(index, pattern); err != nil {
+			err := tx.CreateIndex(index, patternByIndex(index), buntdb.IndexJSON("ID"))
+			if err != nil {
 				return err
 			}
 		}

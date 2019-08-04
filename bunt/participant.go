@@ -8,13 +8,11 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
-const prefixParticipant = "participant"
-
 func indexParticipant(groupID model.GroupID) string {
-	return fmt.Sprintf("%s%s%d", prefixParticipant, sep, int(groupID))
+	return fmt.Sprintf("participant%s%d", sep, int(groupID))
 }
 
-func patternParticipant(groupID model.GroupID) string {
+func prefixParticipant(groupID model.GroupID) string {
 	return indexParticipant(groupID)
 }
 
@@ -43,6 +41,30 @@ func (p *participantRepository) Find(
 	return parseParticipant(raw)
 }
 
+func (p *participantRepository) FindAll(groupID model.GroupID) ([]*model.Participant, error) {
+	var participants []*model.Participant
+	var err = p.db.View(func(tx *buntdb.Tx) error {
+		var pErr error
+		txErr := tx.Ascend(indexParticipant(groupID), func(_, raw string) bool {
+			var parsed *model.Participant
+			if parsed, pErr = parseParticipant(raw); pErr != nil {
+				return false
+			}
+			participants = append(participants, parsed)
+			return true
+		})
+		if pErr != nil {
+			return pErr
+		}
+		return txErr
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return participants, nil
+}
+
 func (p *participantRepository) Store(groupID model.GroupID, partic *model.Participant) error {
 	return p.db.Update(func(tx *buntdb.Tx) error {
 		composedPartic, err := composeParticipant(partic)
@@ -63,7 +85,7 @@ func parseParticipant(raw string) (*model.Participant, error) {
 }
 
 func (p *participantRepository) key(groupID model.GroupID, id model.ParticipantID) string {
-	return fmt.Sprintf("%s%s%d", patternParticipant(groupID), sep, int(id))
+	return fmt.Sprintf("%s%s%d", prefixParticipant(groupID), sep, int(id))
 }
 
 func composeParticipant(p *model.Participant) (string, error) {
