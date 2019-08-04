@@ -8,10 +8,12 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
-const prefixDebt = "debt"
+func prefixDebt(groupID model.GroupID) string {
+	return fmt.Sprintf("debt%s%d", sep, int(groupID))
+}
 
 func indexDebt(groupID model.GroupID) string {
-	return fmt.Sprintf("%s%s%d", prefixDebt, sep, int(groupID))
+	return prefixDebt(groupID)
 }
 
 type debtRepository struct {
@@ -19,26 +21,38 @@ type debtRepository struct {
 }
 
 // NewDebtRepository returns new instance of a BuntDB debt repository
-func NewDebtRepository(db *buntdb.DB) (model.DebtRepository, error) {
-	return &debtRepository{db: db}, nil
+func NewDebtRepository(db *buntdb.DB) model.DebtRepository {
+	return &debtRepository{db: db}
 }
 
 func (r *debtRepository) FindAll(groupID model.GroupID) ([]*model.Debt, error) {
-	_ = r.db.View(func(tx *buntdb.Tx) error {
-		// tx.CreateIndex(debts, )
-		tx.Ascend(indexDebt(groupID), func(key, value string) bool {
+	var debts []*model.Debt
+	err := r.db.View(func(tx *buntdb.Tx) error {
+		var pErr error
+		txErr := tx.Ascend(indexDebt(groupID), func(_, raw string) bool {
+			var parsed *model.Debt
+			if parsed, pErr = r.parse(raw); pErr != nil {
+				return false
+			}
+			debts = append(debts, parsed)
 			return true
 		})
-		return nil
+		if pErr != nil {
+			return pErr
+		}
+		return txErr
 	})
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+	return debts, nil
 }
 
-func (r *debtRepository) Find(groupID model.GroupID, id int) (*model.Debt, error) {
-	var val string
+func (r *debtRepository) Find(groupID model.GroupID, id model.DebtID) (*model.Debt, error) {
+	var raw string
 	err := r.db.View(func(tx *buntdb.Tx) error {
 		var err error
-		val, err = tx.Get(fmt.Sprintf("%s%d::%d", prefixDebt, groupID, id))
+		raw, err = tx.Get(r.key(groupID, id))
 		if err != nil {
 			return err
 		}
@@ -48,19 +62,22 @@ func (r *debtRepository) Find(groupID model.GroupID, id int) (*model.Debt, error
 		return nil, err
 	}
 
-	return parseDebt(val)
+	return r.parse(raw)
 }
 
-func (r *debtRepository) Store(debt *model.Debt) error {
-	wrpdDebt := (*debtWrapper)(debt)
+func (r *debtRepository) Store(groupID model.GroupID, debt *model.Debt) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
-		value, err := wrpdDebt.Value()
+		raw, err := r.compose(debt)
 		if err != nil {
 			return err
 		}
-		_, _, err = tx.Set(wrpdDebt.Key(), value, nil)
+		_, _, err = tx.Set(r.key(groupID, debt.ID), raw, nil)
 		return err
 	})
+}
+
+func (r *debtRepository) key(groupID model.GroupID, id model.DebtID) string {
+	return fmt.Sprintf("%s%s%d", prefixDebt(groupID), sep, int(id))
 }
 
 func (r *debtRepository) NextID(groupID model.GroupID) (model.DebtID, error) {
@@ -68,10 +85,15 @@ func (r *debtRepository) NextID(groupID model.GroupID) (model.DebtID, error) {
 	return 0, nil
 }
 
-func parseDebt(rawDebt string) (*model.Debt, error) {
-	d := &model.Debt{}
-	if err := json.Unmarshal([]byte(rawDebt), d); err != nil {
+func (r *debtRepository) parse(rawDebt string) (*model.Debt, error) {
+	debt := &model.Debt{}
+	if err := json.Unmarshal([]byte(rawDebt), debt); err != nil {
 		return nil, err
 	}
-	return d, nil
+	return debt, nil
+}
+
+func (r *debtRepository) compose(debt *model.Debt) (string, error) {
+	b, err := json.Marshal(debt)
+	return string(b), err
 }

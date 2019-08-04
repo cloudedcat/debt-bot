@@ -11,8 +11,7 @@ type DebtID int
 
 // Debt represents a debt. The main entity in the domain.
 type Debt struct {
-	ID       int
-	GroupID  GroupID
+	ID       DebtID
 	Amount   float64
 	Tag      string
 	Borrower ParticipantID
@@ -25,7 +24,7 @@ type Debt struct {
 // DebtRepository provides access to a debt store.
 type DebtRepository interface {
 	FindAll(groupID GroupID) ([]*Debt, error)
-	Find(groupID GroupID, id int) (*Debt, error)
-	Store(debt *Debt) error
+	Find(groupID GroupID, id DebtID) (*Debt, error)
+	Store(groupID GroupID, debt *Debt) error
 	NextID(groupID GroupID) (DebtID, error)
 }
