@@ -3,10 +3,13 @@ package bunt
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/cloudedcat/finance-bot/model"
 	"github.com/tidwall/buntdb"
 )
+
+const keyDebtCounter = "counter:debt"
 
 func prefixDebt(groupID model.GroupID) string {
 	return fmt.Sprintf("debt%s%d", sep, int(groupID))
@@ -72,6 +75,14 @@ func (r *debtRepository) Store(groupID model.GroupID, debt *model.Debt) error {
 			return err
 		}
 		_, _, err = tx.Set(r.key(groupID, debt.ID), raw, nil)
+		if err != nil {
+			return err
+		}
+		counter, err := r.nextID(tx, groupID)
+		if err != nil && err != buntdb.ErrNotFound {
+			return err
+		}
+		_, _, err = tx.Set(keyDebtCounter, strconv.Itoa(int(counter)), nil)
 		return err
 	})
 }
@@ -80,9 +91,25 @@ func (r *debtRepository) key(groupID model.GroupID, id model.DebtID) string {
 	return fmt.Sprintf("%s%s%d", prefixDebt(groupID), sep, int(id))
 }
 
-func (r *debtRepository) NextID(groupID model.GroupID) (model.DebtID, error) {
-	// NYI
-	return 0, nil
+func (r *debtRepository) NextID(groupID model.GroupID) (id model.DebtID, err error) {
+	err = r.db.View(func(tx *buntdb.Tx) error {
+		id, err = r.nextID(tx, groupID)
+		return err
+	})
+	return
+}
+
+func (r *debtRepository) nextID(tx *buntdb.Tx, groupID model.GroupID) (model.DebtID, error) {
+	rawCounter, err := tx.Get(keyDebtCounter)
+	if err != nil {
+		return 0, err
+	}
+
+	c, err := strconv.Atoi(rawCounter)
+	if err != nil {
+		return 0, err
+	}
+	return model.DebtID(c + 1), nil
 }
 
 func (r *debtRepository) parse(rawDebt string) (*model.Debt, error) {

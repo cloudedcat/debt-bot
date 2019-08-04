@@ -23,7 +23,7 @@ var testDebts = []*model.Debt{
 func uploadTestDebts(t *testing.T, groupID model.GroupID, repo model.DebtRepository) {
 	for _, debt := range testDebts {
 		err := repo.Store(groupID, debt)
-		failOnError(t, err, fmt.Sprintf("failed to load debt: %v", debt.ID))
+		failOnError(t, err, fmt.Sprintf("failed to upload debt: %v", debt.ID))
 	}
 }
 
@@ -37,7 +37,7 @@ func testUploadAll(t *testing.T, db *buntdb.DB) {
 	uploadTestDebts(t, testGroupID, dRepo)
 }
 
-func TestStoreFind(t *testing.T) {
+func TestDebtStoreFind(t *testing.T) {
 	db := testOpen(t)
 	testUploadAll(t, db)
 	repo := NewDebtRepository(db)
@@ -50,7 +50,7 @@ func TestStoreFind(t *testing.T) {
 	}
 }
 
-func TestStoreFindAll(t *testing.T) {
+func TestDebtFindAll(t *testing.T) {
 	db := testOpen(t)
 	testUploadAll(t, db)
 	repo := NewDebtRepository(db)
@@ -59,5 +59,19 @@ func TestStoreFindAll(t *testing.T) {
 	failOnError(t, err, "failed to find all debts")
 	if diff := cmp.Diff(got, testDebts); diff != "" {
 		t.Fatalf("Debt mismatch (-expected, +got):\n%s", diff)
+	}
+}
+
+func TestDebtNextID(t *testing.T) {
+	db := testOpen(t)
+	testUploadAll(t, db)
+	repo := NewDebtRepository(db)
+	// counter starts with 0, so next ID equals number of debts
+	expected := model.DebtID(len(testDebts))
+
+	got, err := repo.NextID(testGroupID)
+	failOnError(t, err, "failed to get next debt ID")
+	if got != expected {
+		t.Fatalf("expected next id is %v but got %v", expected, got)
 	}
 }
