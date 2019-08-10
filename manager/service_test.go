@@ -11,7 +11,7 @@ import (
 
 func testOpen(t *testing.T) *buntdb.DB {
 	db, err := bunt.Open(":memory:")
-	testset.FailOnError(t, err, "failed to open db connection")
+	testset.FatalOnError(t, err, "failed to open db connection")
 	return db
 }
 
@@ -22,9 +22,9 @@ func TestRegisterGroup(t *testing.T) {
 
 	err := service.RegisterGroup(model.Group{ID: testset.GroupID})
 
-	testset.FailOnError(t, err, "faied to register group")
+	testset.FatalOnError(t, err, "faied to register group")
 	_, err = groups.Find(testset.GroupID)
-	testset.FailOnError(t, err, "faied to find registered group")
+	testset.FatalOnError(t, err, "faied to find registered group")
 }
 
 func TestRegisterParticipants(t *testing.T) {
@@ -32,14 +32,14 @@ func TestRegisterParticipants(t *testing.T) {
 	groups, partics := bunt.NewGroupRepository(db), bunt.NewParticipantRepository(db)
 	service := NewService(groups, partics)
 	err := service.RegisterGroup(model.Group{ID: testset.GroupID})
-	testset.FailOnError(t, err, "faied to register group")
+	testset.FatalOnError(t, err, "faied to register group")
 
 	for _, partic := range testset.Participants {
 		err := service.RegisterParticipant(testset.GroupID, *partic)
-		testset.FailOnError(t, err, "faied to register participant")
+		testset.FatalOnError(t, err, "faied to register participant")
 	}
 
 	expected := testset.Participants[len(testset.Participants)/2]
 	_, err = partics.Find(testset.GroupID, expected.ID)
-	testset.FailOnError(t, err, "faied to find participant")
+	testset.FatalOnError(t, err, "faied to find participant")
 }

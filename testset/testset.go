@@ -7,7 +7,7 @@ import (
 	"github.com/cloudedcat/finance-bot/model"
 )
 
-func FailOnError(t *testing.T, err error, context string) {
+func FatalOnError(t *testing.T, err error, context string) {
 	if err != nil {
 		t.Fatalf("%s: %v", context, err)
 	}

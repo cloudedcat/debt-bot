@@ -12,7 +12,7 @@ import (
 func uploadTestParticipants(t *testing.T, groupID model.GroupID, repo model.ParticipantRepository) {
 	for _, partic := range testset.Participants {
 		err := repo.Store(groupID, partic)
-		testset.FailOnError(t, err, fmt.Sprintf("failed to load participant: %v", partic.ID))
+		testset.FatalOnError(t, err, fmt.Sprintf("failed to load participant: %v", partic.ID))
 	}
 }
 
@@ -25,7 +25,7 @@ func TestParticipantStoreFind(t *testing.T) {
 
 	got, err := repo.Find(testset.GroupID, expected.ID)
 
-	testset.FailOnError(t, err, "repository error")
+	testset.FatalOnError(t, err, "repository error")
 	if diff := cmp.Diff(expected, got); diff != "" {
 		t.Fatalf("Debt mismatch (-expected, +got):\n%s", diff)
 	}
@@ -39,7 +39,7 @@ func TestParticipantFindAll(t *testing.T) {
 	expected := model.Participants(testset.Participants)
 
 	got, err := repo.FindAll(testset.GroupID)
-	testset.FailOnError(t, err, "repository error")
+	testset.FatalOnError(t, err, "repository error")
 	if diff := cmp.Diff(expected, got); diff != "" {
 		t.Fatalf("Debt mismatch (-expected, +got):\n%s", diff)
 	}
