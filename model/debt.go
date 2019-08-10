@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 // Currency - NYI
 type Currency string
@@ -11,14 +14,27 @@ type DebtID int
 
 // Debt represents a debt. The main entity in the domain.
 type Debt struct {
-	ID       DebtID
-	Amount   float64
-	Tag      string
-	Borrower ParticipantID
-	Lender   ParticipantID
-	Date     time.Time
+	ID         DebtID
+	Amount     float64
+	Tag        string
+	BorrowerID ParticipantID
+	LenderID   ParticipantID
+	Date       time.Time
 	// Fields reserved for future purposes
 	Currency Currency
+}
+
+var ErrBlankField = errors.New("blank field")
+var ErrParticipants = errors.New("borrower is lender")
+
+func (d *Debt) Validate() error {
+	if d.Amount == 0 {
+		return ErrBlankField
+	}
+	if d.BorrowerID == d.LenderID {
+		return ErrParticipants
+	}
+	return nil
 }
 
 // DebtRepository provides access to a debt store.

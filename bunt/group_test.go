@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/finance-bot/testset"
 )
-
-var testGroupID model.GroupID = 42
 
 func testGroupRepository(t *testing.T) model.GroupRepository {
 	repo, err := Open(":memory:")
@@ -19,7 +18,7 @@ func testGroupRepository(t *testing.T) model.GroupRepository {
 
 func uploadTestGroup(t *testing.T, group *model.Group, repo model.GroupRepository) {
 	err := repo.Store(group)
-	failOnError(t, err, fmt.Sprintf("failed to store group %v", group))
+	testset.FailOnError(t, err, fmt.Sprintf("failed to store group %v", group))
 }
 
 func TestGroupStoreFind(t *testing.T) {
@@ -34,7 +33,7 @@ func TestGroupStoreFind(t *testing.T) {
 
 	for _, group := range expectedGroups {
 		_, err := repo.Find(group.ID)
-		failOnError(t, err, "failed to find group")
+		testset.FailOnError(t, err, "failed to find group")
 
 	}
 

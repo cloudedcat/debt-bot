@@ -78,11 +78,6 @@ func (r *debtRepository) Store(groupID model.GroupID, debt *model.Debt) error {
 		if err != nil {
 			return err
 		}
-		counter, err := r.nextID(tx, groupID)
-		if err != nil && err != buntdb.ErrNotFound {
-			return err
-		}
-		_, _, err = tx.Set(keyDebtCounter, strconv.Itoa(int(counter)), nil)
 		return err
 	})
 }
@@ -91,9 +86,13 @@ func (r *debtRepository) key(groupID model.GroupID, id model.DebtID) string {
 	return fmt.Sprintf("%s%s%d", prefixDebt(groupID), sep, int(id))
 }
 
+// NextID return id and autoincrement counter, so it excludes collisions
 func (r *debtRepository) NextID(groupID model.GroupID) (id model.DebtID, err error) {
-	err = r.db.View(func(tx *buntdb.Tx) error {
-		id, err = r.nextID(tx, groupID)
+	err = r.db.Update(func(tx *buntdb.Tx) error {
+		if id, err = r.nextID(tx, groupID); err != nil {
+			return err
+		}
+		_, _, err = tx.Set(keyDebtCounter, strconv.Itoa(int(id)), nil)
 		return err
 	})
 	return
@@ -101,7 +100,10 @@ func (r *debtRepository) NextID(groupID model.GroupID) (id model.DebtID, err err
 
 func (r *debtRepository) nextID(tx *buntdb.Tx, groupID model.GroupID) (model.DebtID, error) {
 	rawCounter, err := tx.Get(keyDebtCounter)
-	if err != nil {
+
+	if err == buntdb.ErrNotFound {
+		return 0, nil
+	} else if err != nil {
 		return 0, err
 	}
 

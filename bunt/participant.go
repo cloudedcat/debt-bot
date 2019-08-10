@@ -41,7 +41,7 @@ func (r *participantRepository) Find(
 	return r.parse(raw)
 }
 
-func (r *participantRepository) FindAll(groupID model.GroupID) ([]*model.Participant, error) {
+func (r *participantRepository) FindAll(groupID model.GroupID) (model.Participants, error) {
 	var participants []*model.Participant
 	var err = r.db.View(func(tx *buntdb.Tx) error {
 		var pErr error
@@ -62,7 +62,7 @@ func (r *participantRepository) FindAll(groupID model.GroupID) ([]*model.Partici
 		return nil, err
 	}
 
-	return participants, nil
+	return model.Participants(participants), nil
 }
 
 func (r *participantRepository) Store(groupID model.GroupID, partic *model.Participant) error {
