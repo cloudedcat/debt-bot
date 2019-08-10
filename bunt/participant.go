@@ -16,7 +16,7 @@ func indexParticipant(groupID model.GroupID) string {
 	return prefixParticipant(groupID)
 }
 
-// NewParticipantRepository creates new instanse of ParticipantRepository
+// NewParticipantRepository creates new instance of ParticipantRepository
 func NewParticipantRepository(db *buntdb.DB) model.ParticipantRepository {
 	return &participantRepository{db: db}
 }

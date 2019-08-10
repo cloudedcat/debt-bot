@@ -54,8 +54,8 @@ func (r *groupRepository) Store(group *model.Group) error {
 		if err != nil {
 			return err
 		}
-		tx.Set(r.key(group.ID), composedGroup, nil)
-		return nil
+		_, _, err = tx.Set(r.key(group.ID), composedGroup, nil)
+		return err
 	})
 }
 

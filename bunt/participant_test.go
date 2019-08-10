@@ -7,12 +7,7 @@ import (
 	"github.com/cloudedcat/finance-bot/model"
 	"github.com/cloudedcat/finance-bot/testset"
 	"github.com/google/go-cmp/cmp"
-	"github.com/tidwall/buntdb"
 )
-
-func testParticipantRepository(t *testing.T, conn *buntdb.DB) model.ParticipantRepository {
-	return NewParticipantRepository(conn)
-}
 
 func uploadTestParticipants(t *testing.T, groupID model.GroupID, repo model.ParticipantRepository) {
 	for _, partic := range testset.Participants {

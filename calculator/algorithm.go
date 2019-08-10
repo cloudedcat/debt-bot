@@ -53,6 +53,7 @@ func calculate(borrowers, lenders pairs) []calculatedDebt {
 		if math.Abs(b.Amount-l.Amount) < precision {
 			// Do nothing if amounts are equal
 		} else if b.Amount > l.Amount {
+			// otherwise insert rest of the debt back into array
 			b.Amount -= l.Amount
 			borrowers = reverseInsertPair(borrowers, b)
 		} else {
@@ -78,5 +79,5 @@ func reverseInsertPair(ps pairs, p pair) pairs {
 }
 
 func shiftPair(ps pairs) pairs {
-	return ps[1:len(ps)]
+	return ps[1:]
 }

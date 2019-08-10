@@ -9,8 +9,6 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
-const keyDebtCounter = "counter:debt"
-
 func prefixDebt(groupID model.GroupID) string {
 	return fmt.Sprintf("debt%s%d", sep, int(groupID))
 }
@@ -92,14 +90,14 @@ func (r *debtRepository) NextID(groupID model.GroupID) (id model.DebtID, err err
 		if id, err = r.nextID(tx, groupID); err != nil {
 			return err
 		}
-		_, _, err = tx.Set(keyDebtCounter, strconv.Itoa(int(id)), nil)
+		_, _, err = tx.Set(r.debtCounterKey(groupID), strconv.Itoa(int(id)), nil)
 		return err
 	})
 	return
 }
 
 func (r *debtRepository) nextID(tx *buntdb.Tx, groupID model.GroupID) (model.DebtID, error) {
-	rawCounter, err := tx.Get(keyDebtCounter)
+	rawCounter, err := tx.Get(r.debtCounterKey(groupID))
 
 	if err == buntdb.ErrNotFound {
 		return 0, nil
@@ -112,6 +110,10 @@ func (r *debtRepository) nextID(tx *buntdb.Tx, groupID model.GroupID) (model.Deb
 		return 0, err
 	}
 	return model.DebtID(c + 1), nil
+}
+
+func (r *debtRepository) debtCounterKey(groupID model.GroupID) string {
+	return fmt.Sprintf("counter:%d:debt", int(groupID))
 }
 
 func (r *debtRepository) parse(rawDebt string) (*model.Debt, error) {
