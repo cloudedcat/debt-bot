@@ -16,8 +16,6 @@ type pair struct {
 
 type calculatedDebt model.Debt
 
-// use multikey sort to have always same order of pairs that get us always
-// same result of debt calculation
 type pairs []pair
 
 func (a pairs) Len() int      { return len(a) }
@@ -26,6 +24,8 @@ func (a pairs) Less(i, j int) bool {
 	return less(a[i], a[j])
 }
 
+// use multikey sort to have always same order of pairs that get us always
+// same result of debt calculation
 func less(a, b pair) bool {
 	if a.Amount != b.Amount {
 		return a.Amount < b.Amount

@@ -15,6 +15,10 @@ func BuildGroup(id GroupID) *Group {
 	return &Group{ID: id}
 }
 
+func (g *Group) Validate() error {
+	return nil
+}
+
 // GroupRepository provides access to a group store.
 type GroupRepository interface {
 	Find(groupID GroupID) (*Group, error)

@@ -25,14 +25,14 @@ type Debt struct {
 }
 
 var ErrBlankField = errors.New("blank field")
-var ErrParticipants = errors.New("borrower is lender")
+var ErrParticipantCollision = errors.New("borrower cant be lender")
 
 func (d *Debt) Validate() error {
 	if d.Amount == 0 {
 		return ErrBlankField
 	}
 	if d.BorrowerID == d.LenderID {
-		return ErrParticipants
+		return ErrParticipantCollision
 	}
 	return nil
 }

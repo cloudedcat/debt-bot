@@ -26,6 +26,14 @@ func (ps Participants) AsMap() map[ParticipantID]*Participant {
 	return mPartics
 }
 
+func (p *Participant) Validate() error {
+	if p.Alias == "" || p.FirstName == "" {
+		return ErrBlankField
+	}
+	// SecondName is optional in Telegram, so don't check it
+	return nil
+}
+
 // ParticipantRepository provides access to a participant store.
 type ParticipantRepository interface {
 	FindAll(groupID GroupID) (Participants, error)

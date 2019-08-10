@@ -10,7 +10,7 @@ type Service interface {
 }
 
 // FinalDebt contains final sum that one participant owe another
-// FinalDebt uses model.Debt as value object inside
+// FinalDebt uses model.Debt inside as a value object
 type FinalDebt struct {
 	Borrower *model.Participant
 	Lender   *model.Participant
