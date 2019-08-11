@@ -41,6 +41,6 @@ func (d *Debt) Validate() error {
 type DebtRepository interface {
 	FindAll(groupID GroupID) ([]*Debt, error)
 	Find(groupID GroupID, id DebtID) (*Debt, error)
-	Store(groupID GroupID, debt *Debt) error
+	Store(groupID GroupID, debts ...*Debt) error
 	NextID(groupID GroupID) (DebtID, error)
 }

@@ -21,9 +21,10 @@ func uploadTestDebts(t *testing.T, groupID model.GroupID, repo model.DebtReposit
 	for _, debt := range testset.Debts {
 		debt.ID, err = repo.NextID(groupID)
 		testset.FatalOnError(t, err, fmt.Sprintf("failed to get nex id"))
-		err = repo.Store(groupID, debt)
-		testset.FatalOnError(t, err, fmt.Sprintf("failed to upload debt '%v'", debt.ID))
 	}
+
+	err = repo.Store(groupID, testset.Debts...)
+	testset.FatalOnError(t, err, fmt.Sprintf("failed to upload debt list '%v'", testset.Debts))
 }
 
 func testUploadAll(t *testing.T, db *buntdb.DB) {

@@ -8,20 +8,26 @@ import (
 	"github.com/cloudedcat/finance-bot/handle"
 	"github.com/cloudedcat/finance-bot/log"
 	"github.com/cloudedcat/finance-bot/manager"
+	"github.com/cloudedcat/finance-bot/model"
+	"github.com/tidwall/buntdb"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+func newBuntRepositories(db *buntdb.DB) (
+	model.GroupRepository, model.ParticipantRepository, model.DebtRepository) {
+
+	return bunt.NewGroupRepository(db), bunt.NewParticipantRepository(db), bunt.NewDebtRepository(db)
+}
+
 func main() {
 	logger := log.NewZapLogger()
-	logger.Infow("Bot initializing")
+	logger.Infow("Bot initializing...")
 	db, err := bunt.Open(config.DBName)
 	if err != nil {
 		logger.Fatalw(err.Error())
 	}
-	groups := bunt.NewGroupRepository(db)
-	debts := bunt.NewDebtRepository(db)
-	partics := bunt.NewParticipantRepository(db)
+	groups, partics, debts := newBuntRepositories(db)
 
 	managerService := manager.NewService(groups, partics)
 	_ = calculator.NewService(debts, partics) // NYI

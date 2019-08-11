@@ -66,18 +66,24 @@ func (r *debtRepository) Find(groupID model.GroupID, id model.DebtID) (*model.De
 	return r.parse(raw)
 }
 
-func (r *debtRepository) Store(groupID model.GroupID, debt *model.Debt) error {
+func (r *debtRepository) Store(groupID model.GroupID, debts ...*model.Debt) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
-		raw, err := r.compose(debt)
-		if err != nil {
-			return err
+		for _, debt := range debts {
+			if err := r.store(tx, groupID, debt); err != nil {
+				return err
+			}
 		}
-		_, _, err = tx.Set(r.key(groupID, debt.ID), raw, nil)
-		if err != nil {
-			return err
-		}
-		return err
+		return nil
 	})
+}
+
+func (r *debtRepository) store(tx *buntdb.Tx, groupID model.GroupID, debt *model.Debt) error {
+	raw, err := r.compose(debt)
+	if err != nil {
+		return err
+	}
+	_, _, err = tx.Set(r.key(groupID, debt.ID), raw, nil)
+	return err
 }
 
 func (r *debtRepository) key(groupID model.GroupID, id model.DebtID) string {
