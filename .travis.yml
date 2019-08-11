@@ -5,12 +5,10 @@ env:
 
 go:
 - 1.12.x
-- 1.11.x
 
 
 script:
-  - golangci-lint run
-  - go test -race -coverprofile=coverage.txt -covermode=atomic
+  - bash test.sh
 
 
 after_success:
