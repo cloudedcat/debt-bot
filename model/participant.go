@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 // ParticipantID is Telegram ID
 type ParticipantID int
 
@@ -24,6 +26,13 @@ func (ps Participants) AsMap() map[ParticipantID]*Participant {
 		mPartics[partic.ID] = partic
 	}
 	return mPartics
+}
+
+func (ps Participants) AsString() (text string) {
+	for _, partic := range ps {
+		text += fmt.Sprintf("@%s - %s %s\n", partic.Alias, partic.FirstName, partic.LastName)
+	}
+	return
 }
 
 func (p *Participant) Validate() error {

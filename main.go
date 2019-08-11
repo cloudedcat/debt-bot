@@ -44,6 +44,7 @@ func main() {
 
 	handle.AddToChat(bot, managerService, logger)
 	handle.RegisterParticipant(bot, managerService, logger)
+	handle.ParticipantList(bot, managerService, logger)
 
 	bot.Start()
 }

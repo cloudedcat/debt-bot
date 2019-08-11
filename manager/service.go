@@ -6,6 +6,7 @@ import "github.com/cloudedcat/finance-bot/model"
 type Service interface {
 	RegisterGroup(group model.Group) error
 	RegisterParticipant(model.GroupID, model.Participant) error
+	ListParticipant(model.GroupID) (model.Participants, error)
 }
 
 type service struct {
@@ -33,4 +34,8 @@ func (s *service) RegisterParticipant(gID model.GroupID, partic model.Participan
 		return err
 	}
 	return s.participants.Store(gID, &partic)
+}
+
+func (s *service) ListParticipant(gID model.GroupID) (model.Participants, error) {
+	return s.participants.FindAll(gID)
 }
