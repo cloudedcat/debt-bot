@@ -69,6 +69,7 @@ func (r *debtRepository) Find(groupID model.GroupID, id model.DebtID) (*model.De
 func (r *debtRepository) Store(groupID model.GroupID, debts ...*model.Debt) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
 		for _, debt := range debts {
+
 			if err := r.store(tx, groupID, debt); err != nil {
 				return err
 			}

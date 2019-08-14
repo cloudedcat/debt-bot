@@ -30,7 +30,7 @@ func main() {
 	groups, partics, debts := newBuntRepositories(db)
 
 	managerService := manager.NewService(groups, partics)
-	_ = calculator.NewService(debts, partics) // NYI
+	calculatorService := calculator.NewService(debts, partics)
 
 	bot, err := tb.NewBot(tb.Settings{
 		Token:  config.BotToken,
@@ -45,6 +45,7 @@ func main() {
 	handle.AddToChat(bot, managerService, logger)
 	handle.RegisterParticipant(bot, managerService, logger)
 	handle.ParticipantList(bot, managerService, logger)
+	handle.ShareDebt(bot, calculatorService, logger)
 
 	bot.Start()
 }

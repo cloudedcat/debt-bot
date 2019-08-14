@@ -1,6 +1,9 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ParticipantID is Telegram ID
 type ParticipantID int
@@ -28,11 +31,36 @@ func (ps Participants) AsMap() map[ParticipantID]*Participant {
 	return mPartics
 }
 
+func (ps Participants) AsAliasMap() map[Alias]*Participant {
+	mPartics := make(map[Alias]*Participant)
+	for _, partic := range ps {
+		mPartics[partic.Alias] = partic
+	}
+	return mPartics
+}
+
 func (ps Participants) AsString() (text string) {
 	for _, partic := range ps {
 		text += fmt.Sprintf("@%s - %s %s\n", partic.Alias, partic.FirstName, partic.LastName)
 	}
 	return
+}
+
+func BuildAlias(username string) (Alias, error) {
+	u := strings.TrimSpace(username)
+	u = strings.TrimPrefix(u, "@")
+	if u == "" {
+		return "", fmt.Errorf("failed to build alias from '%s'", username)
+	}
+	return Alias(strings.ToLower(u)), nil
+}
+
+func MustBuildAlias(username string) Alias {
+	alias, err := BuildAlias(username)
+	if err != nil {
+		panic(err)
+	}
+	return alias
 }
 
 func (p *Participant) Validate() error {

@@ -9,6 +9,16 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
+func testDebtWithAliases() []DebtWithAliases {
+	return []DebtWithAliases{
+		{15, "Bernard", "ck", "noah"},
+		{25, "ChiniseCuisine", "noah", "chapp"},
+		{13, "BaoStore", "murphy", "chapp"},
+		{13, "BaoStore", "murphy", "noah"},
+		{13, "BaoStore", "chapp", "ck"},
+	}
+}
+
 func testOpen(t *testing.T) *buntdb.DB {
 	db, err := bunt.Open(":memory:")
 	testset.FatalOnError(t, err, "failed to open db connection")
@@ -31,24 +41,23 @@ func addParticipants(t *testing.T, db *buntdb.DB) {
 }
 
 func addDebtsViaService(t *testing.T, service Service) {
-	for _, d := range testset.Debts {
-		err := service.AddDebt(testset.GroupID, *d)
-		testset.FatalOnError(t, err, "failed to add debt via service")
-	}
+	err := service.AddDebtsByAliases(testset.GroupID, testDebtWithAliases()...)
+	testset.FatalOnError(t, err, "failed to add debt via service")
 }
 
-func TestAddDebt(t *testing.T) {
+func TestAddDebts(t *testing.T) {
 	db := testOpen(t)
 	addGroup(t, db)
 	addParticipants(t, db)
 	debts, partics := bunt.NewDebtRepository(db), bunt.NewParticipantRepository(db)
 	service := NewService(debts, partics)
 	addDebtsViaService(t, service)
+	expectedLen := len(testDebtWithAliases())
 
 	got, err := debts.FindAll(testset.GroupID)
 	testset.FatalOnError(t, err, "failed to find all debts")
-	if len(got) != len(testset.Debts) {
-		t.Fatalf("expected %d debts but got %d", len(testset.Debts), len(got))
+	if len(got) != expectedLen {
+		t.Fatalf("expected %d debts but got %d", expectedLen, len(got))
 	}
 }
 

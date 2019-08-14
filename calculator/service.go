@@ -1,13 +1,18 @@
 package calculator
 
 import (
+	"errors"
+
 	"github.com/cloudedcat/finance-bot/model"
 )
 
 type Service interface {
-	AddDebt(groupID model.GroupID, debt model.Debt) error
+	AddDebtsByAliases(groupID model.GroupID, debts ...DebtWithAliases) error
+	// AddDebts(groupID model.GroupID, debts ...*model.Debt) error
 	CalculateDebts(groupID model.GroupID) ([]FinalDebt, error)
 }
+
+var ErrParticipantNotFound = errors.New("participant not found")
 
 // FinalDebt contains final sum that one participant owe another
 // FinalDebt uses model.Debt inside as a value object
@@ -29,15 +34,54 @@ func NewService(debts model.DebtRepository, participants model.ParticipantReposi
 	}
 }
 
-func (s *service) AddDebt(groupID model.GroupID, debt model.Debt) error {
+func (s *service) AddDebts(groupID model.GroupID, debts ...*model.Debt) error {
 	var err error
-	if debt.ID, err = s.debts.NextID(groupID); err != nil {
+	for _, debt := range debts {
+		if debt.ID, err = s.debts.NextID(groupID); err != nil {
+			return err
+		}
+		if err = debt.Validate(); err != nil {
+			return err
+		}
+	}
+	return s.debts.Store(groupID, debts...)
+}
+
+type DebtWithAliases struct {
+	Amount   float64
+	Tag      string
+	Borrower model.Alias
+	Lender   model.Alias
+}
+
+func (s *service) AddDebtsByAliases(groupID model.GroupID, aliasDebts ...DebtWithAliases) error {
+	partics, err := s.participants.FindAll(groupID)
+	if err != nil {
 		return err
 	}
-	if err := debt.Validate(); err != nil {
-		return err
+	aliasMap := partics.AsAliasMap()
+
+	var debts []*model.Debt
+	for _, aliasDebt := range aliasDebts {
+		borrower, lender := aliasMap[aliasDebt.Borrower], aliasMap[aliasDebt.Lender]
+		if borrower == nil || lender == nil {
+			return ErrParticipantNotFound
+		}
+		debt := &model.Debt{
+			LenderID:   lender.ID,
+			BorrowerID: borrower.ID,
+			Tag:        aliasDebt.Tag,
+			Amount:     aliasDebt.Amount,
+		}
+		if debt.ID, err = s.debts.NextID(groupID); err != nil {
+			return err
+		}
+		if err = debt.Validate(); err != nil {
+			return err
+		}
+		debts = append(debts, debt)
 	}
-	return s.debts.Store(groupID, &debt)
+	return s.debts.Store(groupID, debts...)
 }
 
 // CalculateDebts is the main method of service and the main purpose of the application.

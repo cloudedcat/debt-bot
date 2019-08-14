@@ -17,18 +17,20 @@ const Currency = "USD"
 
 var GroupID model.GroupID = 42
 
-var Debts = []*model.Debt{
-	{0, 15, "Bernard", Participants[0].ID, Participants[1].ID, time.Now(), Currency},
-	{0, 25, "ChiniseCuisine", Participants[1].ID, Participants[2].ID, time.Now(), Currency},
-	{0, 13, "BaoStore", Participants[3].ID, Participants[2].ID, time.Now(), Currency},
-	{0, 13, "BaoStore", Participants[3].ID, Participants[1].ID, time.Now(), Currency},
-	{0, 13, "BaoStore", Participants[2].ID, Participants[0].ID, time.Now(), Currency},
+func Debts() []*model.Debt {
+	return []*model.Debt{
+		{0, 15, "Bernard", Participants[0].ID, Participants[1].ID, time.Now(), Currency},
+		{0, 25, "ChiniseCuisine", Participants[1].ID, Participants[2].ID, time.Now(), Currency},
+		{0, 13, "BaoStore", Participants[3].ID, Participants[2].ID, time.Now(), Currency},
+		{0, 13, "BaoStore", Participants[3].ID, Participants[1].ID, time.Now(), Currency},
+		{0, 13, "BaoStore", Participants[2].ID, Participants[0].ID, time.Now(), Currency},
+	}
 }
 
 var Participants = []*model.Participant{
-	{12, "@ck", "Louis", "C K"},
-	{13, "@noah", "Trevor", "Noah"},
-	{14, "@chapp", "Dave", "Chappelle"},
-	{15, "@murphy", "Eddie", "Murphy"},
-	{16, "@rock", "Chris", "Rock"},
+	{12, "ck", "Louis", "C K"},
+	{13, "noah", "Trevor", "Noah"},
+	{14, "chapp", "Dave", "Chappelle"},
+	{15, "murphy", "Eddie", "Murphy"},
+	{16, "rock", "Chris", "Rock"},
 }

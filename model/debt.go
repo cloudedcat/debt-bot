@@ -28,6 +28,7 @@ var ErrBlankField = errors.New("blank field")
 var ErrParticipantCollision = errors.New("borrower cant be lender")
 
 func (d *Debt) Validate() error {
+
 	if d.Amount == 0 {
 		return ErrBlankField
 	}
