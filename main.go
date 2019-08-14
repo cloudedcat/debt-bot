@@ -46,6 +46,7 @@ func main() {
 	handle.RegisterParticipant(bot, managerService, logger)
 	handle.ParticipantList(bot, managerService, logger)
 	handle.ShareDebt(bot, calculatorService, logger)
+	handle.Calculate(bot, calculatorService, logger)
 
 	bot.Start()
 }

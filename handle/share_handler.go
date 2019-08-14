@@ -86,6 +86,7 @@ func (sh *shareHandler) handle(m *tb.Message) {
 		sh.botHelper.SendInternalError(m.Chat, loglInfo)
 		return
 	}
+	sh.botHelper.Send(m.Chat, "debt shared", loglInfo)
 }
 
 func (sh *shareHandler) parseCommand(invoker string, text string) (*debtCommand, *Error) {

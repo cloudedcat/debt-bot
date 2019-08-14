@@ -74,7 +74,7 @@ func RegisterParticipant(bot *tb.Bot, mng manager.Service, logger log.Logger) {
 
 // ParticipantList shows list of partisipants
 func ParticipantList(bot *tb.Bot, mng manager.Service, logger log.Logger) {
-	const handlerName = "RegisterParticipant"
+	const handlerName = "ParticipantList"
 	botHelper := &botLogHelper{Bot: bot, logger: logger}
 
 	bot.Handle("/list", func(m *tb.Message) {
@@ -87,6 +87,7 @@ func ParticipantList(bot *tb.Bot, mng manager.Service, logger log.Logger) {
 		groupID := model.GroupID(m.Chat.ID)
 		partics, err := mng.ListParticipant(groupID)
 		if err != nil {
+			botHelper.SendInternalError(m.Chat, logInfo)
 			logger.IfErrorw(err, "failed to list participant", logInfo...)
 			return
 		}
