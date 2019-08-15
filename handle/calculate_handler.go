@@ -3,6 +3,7 @@ package handle
 import (
 	"fmt"
 
+	"github.com/cloudedcat/finance-bot/bot"
 	"github.com/cloudedcat/finance-bot/calculator"
 	"github.com/cloudedcat/finance-bot/log"
 	"github.com/cloudedcat/finance-bot/model"
@@ -10,29 +11,23 @@ import (
 )
 
 type calculateHandler struct {
-	botHelper *botLogHelper
-	calc      calculator.Service
-	logger    log.Logger
+	calc   calculator.Service
+	logger log.Logger
 }
 
-func (hdl *calculateHandler) handle(m *tb.Message) {
+func (h *calculateHandler) handle(bot bot.Bot, m *tb.Message) {
 	logInfo := formLogInfo(m, "Calculate")
-
-	if m.Private() {
-		hdl.botHelper.Send(m.Chat, stubMessage, logInfo)
-		return
-	}
 	groupID := model.GroupID(m.Chat.ID)
-	finalDebts, err := hdl.calc.CalculateDebts(groupID)
+	finalDebts, err := h.calc.CalculateDebts(groupID)
 	if err != nil {
-		hdl.botHelper.SendInternalError(m.Chat, logInfo)
-		hdl.logger.IfErrorw(err, "failed to calculate debts", logInfo...)
+		bot.SendInternalError(m.Chat, logInfo)
+		h.logger.IfErrorw(err, "failed to calculate debts", logInfo...)
 		return
 	}
-	hdl.botHelper.Send(m.Chat, hdl.formMessage(finalDebts), logInfo)
+	bot.Send(m.Chat, h.formMessage(finalDebts), logInfo)
 }
 
-func (hdl *calculateHandler) formMessage(debts []calculator.FinalDebt) (resp string) {
+func (h *calculateHandler) formMessage(debts []calculator.FinalDebt) (resp string) {
 	if len(debts) == 0 {
 		resp = "there ain't debts"
 	}
@@ -45,11 +40,10 @@ func (hdl *calculateHandler) formMessage(debts []calculator.FinalDebt) (resp str
 }
 
 // Calculate shows debt for each borrower
-func Calculate(bot *tb.Bot, calc calculator.Service, logger log.Logger) {
+func Calculate(bot bot.Bot, calc calculator.Service, logger log.Logger) {
 	handler := &calculateHandler{
-		botHelper: &botLogHelper{Bot: bot, logger: logger},
-		calc:      calc,
-		logger:    logger,
+		calc:   calc,
+		logger: logger,
 	}
-	bot.Handle("/calc", handler.handle)
+	bot.Handle("/calc", notPrivateOnlyMiddleware(handler.handle))
 }

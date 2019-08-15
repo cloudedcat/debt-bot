@@ -3,102 +3,24 @@ package handle
 import (
 	"fmt"
 
+	"github.com/cloudedcat/finance-bot/bot"
 	"github.com/cloudedcat/finance-bot/log"
 	"github.com/cloudedcat/finance-bot/manager"
 	"github.com/cloudedcat/finance-bot/model"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const stubMessage = "that command doesn't work in private chat"
+func notPrivateOnlyMiddleware(hdl bot.Handler) bot.Handler {
+	const stubMessage = "that command doesn't work in private chat"
 
-type botLogHelper struct {
-	*tb.Bot
-	logger log.Logger
-}
-
-func (b *botLogHelper) Send(to tb.Recipient, what interface{}, logInfo []interface{}, options ...interface{}) (*tb.Message, error) {
-	msg, err := b.Bot.Send(to, what, options...)
-	b.logger.IfErrorw(err, "failed to send message", logInfo...)
-	return msg, err
-}
-
-func (b *botLogHelper) SendInternalError(to tb.Recipient, logInfo []interface{}) (*tb.Message, error) {
-	msg, err := b.Bot.Send(to, "internal error")
-	b.logger.IfErrorw(err, "failed to send message", logInfo...)
-	return msg, err
-}
-
-// AddToChat handles adding bot to new chat
-func AddToChat(bot *tb.Bot, mng manager.Service, logger log.Logger) {
-	const handlerName = "AddToChat"
-
-	bot.Handle(tb.OnAddedToGroup, func(m *tb.Message) {
-		additionalInfo := formLogInfo(m, handlerName)
-
-		id := model.GroupID(m.Chat.ID)
-		if err := mng.RegisterGroup(model.Group{ID: id}); err != nil {
-			logger.IfErrorw(err, "failed to register group", additionalInfo)
+	return func(bot bot.Bot, m *tb.Message) {
+		if !m.Private() {
+			hdl(bot, m)
 			return
 		}
-		logger.Infow("register new group", additionalInfo...)
-	})
-}
-
-// RegisterParticipant adds handler for registering new paticipant in group
-func RegisterParticipant(bot *tb.Bot, mng manager.Service, logger log.Logger) {
-	const handlerName = "RegisterParticipant"
-	botHelper := &botLogHelper{Bot: bot, logger: logger}
-
-	bot.Handle("/reg", func(m *tb.Message) {
-		logInfo := formLogInfo(m, handlerName)
-		if m.Private() {
-			botHelper.Send(m.Chat, stubMessage, logInfo)
-			return
-		}
-
-		groupID := model.GroupID(m.Chat.ID)
-		partic := model.Participant{
-			ID:        model.ParticipantID(m.Sender.ID),
-			Alias:     model.MustBuildAlias(m.Sender.Username),
-			FirstName: m.Sender.FirstName,
-			LastName:  m.Sender.LastName,
-		}
-		if err := mng.RegisterParticipant(groupID, partic); err != nil {
-			botHelper.SendInternalError(m.Chat, logInfo)
-			logger.IfErrorw(err, "failed to register participant", logInfo...)
-		}
-		logger.Infow("register new participant", logInfo...)
-		botHelper.Send(m.Chat, fmt.Sprintf("@%v is registered", partic.Alias), logInfo)
-	})
-}
-
-// ParticipantList shows list of partisipants
-func ParticipantList(bot *tb.Bot, mng manager.Service, logger log.Logger) {
-	const handlerName = "ParticipantList"
-	botHelper := &botLogHelper{Bot: bot, logger: logger}
-
-	bot.Handle("/list", func(m *tb.Message) {
-		logInfo := formLogInfo(m, handlerName)
-
-		if m.Private() {
-			botHelper.Send(m.Chat, stubMessage, logInfo)
-			return
-		}
-		groupID := model.GroupID(m.Chat.ID)
-		partics, err := mng.ListParticipant(groupID)
-		if err != nil {
-			botHelper.SendInternalError(m.Chat, logInfo)
-			logger.IfErrorw(err, "failed to list participant", logInfo...)
-			return
-		}
-		text := partics.AsString()
-		if text == "" {
-			text = "list of participants is empty"
-		} else {
-			text = "list of participants:\n" + text
-		}
-		botHelper.Send(m.Chat, text, logInfo)
-	})
+		logInfo := formLogInfo(m, "notPrivateOnlyMiddleware")
+		bot.Send(m.Chat, stubMessage, logInfo)
+	}
 }
 
 func formLogInfo(m *tb.Message, handlerName string) []interface{} {
@@ -109,4 +31,85 @@ func formLogInfo(m *tb.Message, handlerName string) []interface{} {
 		"invokerID", m.Sender.ID,
 		"text", m.Text,
 	}
+}
+
+type addToChatHandler struct {
+	mng    manager.Service
+	logger log.Logger
+}
+
+func (h *addToChatHandler) handle(_ bot.Bot, m *tb.Message) {
+	logInfo := formLogInfo(m, "AddToChat")
+
+	id := model.GroupID(m.Chat.ID)
+	if err := h.mng.RegisterGroup(model.Group{ID: id}); err != nil {
+		h.logger.IfErrorw(err, "failed to register group", logInfo)
+		return
+	}
+	h.logger.Infow("register new group", logInfo...)
+}
+
+// AddToChat handles adding bot to new chat
+func AddToChat(bot bot.Bot, mng manager.Service, logger log.Logger) {
+	hdl := &addToChatHandler{mng: mng, logger: logger}
+	bot.Handle(tb.OnAddedToGroup, hdl.handle)
+}
+
+type registerParticipantHandler struct {
+	bot    bot.Bot
+	mng    manager.Service
+	logger log.Logger
+}
+
+func (h *registerParticipantHandler) handle(bot bot.Bot, m *tb.Message) {
+	logInfo := formLogInfo(m, "RegisterParticipant")
+	groupID := model.GroupID(m.Chat.ID)
+	partic := model.Participant{
+		ID:        model.ParticipantID(m.Sender.ID),
+		Alias:     model.MustBuildAlias(m.Sender.Username),
+		FirstName: m.Sender.FirstName,
+		LastName:  m.Sender.LastName,
+	}
+	if err := h.mng.RegisterParticipant(groupID, partic); err != nil {
+		bot.SendInternalError(m.Chat, logInfo)
+		h.logger.IfErrorw(err, "failed to register participant", logInfo...)
+	}
+	h.logger.Infow("register new participant", logInfo...)
+	bot.Send(m.Chat, fmt.Sprintf("@%v is registered", partic.Alias), logInfo)
+}
+
+// RegisterParticipant adds handler for registering new paticipant in group
+func RegisterParticipant(bot bot.Bot, mng manager.Service, logger log.Logger) {
+	hdl := registerParticipantHandler{mng: mng, logger: logger}
+	bot.Handle("/reg", notPrivateOnlyMiddleware(hdl.handle))
+}
+
+type participantListHandler struct {
+	mng    manager.Service
+	logger log.Logger
+}
+
+func (h *participantListHandler) handle(bot bot.Bot, m *tb.Message) {
+	logInfo := formLogInfo(m, "ParticipantList")
+	groupID := model.GroupID(m.Chat.ID)
+	partics, err := h.mng.ListParticipant(groupID)
+	if err != nil {
+		bot.SendInternalError(m.Chat, logInfo)
+		h.logger.IfErrorw(err, "failed to list participant", logInfo...)
+		return
+	}
+	text := partics.AsString()
+	if text == "" {
+		text = "list of participants is empty"
+	} else {
+		text = "list of participants:\n" + text
+	}
+	bot.Send(m.Chat, text, logInfo)
+}
+
+// ParticipantList shows list of partisipants
+func ParticipantList(bot bot.Bot, mng manager.Service, logger log.Logger) {
+	hdl := &participantListHandler{mng: mng, logger: logger}
+
+	bot.Handle("/list", notPrivateOnlyMiddleware(hdl.handle))
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/cloudedcat/finance-bot/bot"
 	"github.com/cloudedcat/finance-bot/bunt"
 	"github.com/cloudedcat/finance-bot/calculator"
 	"github.com/cloudedcat/finance-bot/handle"
@@ -31,11 +32,13 @@ func main() {
 
 	managerService := manager.NewService(groups, partics)
 	calculatorService := calculator.NewService(debts, partics)
+	_ = calculatorService
 
-	bot, err := tb.NewBot(tb.Settings{
+	bot, err := bot.NewTelegramBot(tb.Settings{
 		Token:  config.BotToken,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
-	})
+	}, logger)
+
 	if err != nil {
 		logger.Fatalw(err.Error())
 	}

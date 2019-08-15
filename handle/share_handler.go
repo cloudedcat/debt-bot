@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cloudedcat/finance-bot/bot"
 	"github.com/cloudedcat/finance-bot/calculator"
 	"github.com/cloudedcat/finance-bot/log"
 	"github.com/cloudedcat/finance-bot/model"
@@ -28,24 +29,37 @@ const (
 	uErrParticCollision = "lender can't be borrower in the same time"
 )
 
+type shareHandler struct {
+	calc   calculator.Service
+	logger log.Logger
+}
+
+func (sh *shareHandler) handle(bot bot.Bot, m *tb.Message) {
+	loglInfo := formLogInfo(m, "ShareDebt")
+	cmd, customErr := sh.parseCommand(m.Sender.Username, m.Text)
+	if customErr != nil {
+		bot.Send(m.Chat, customErr.userError, loglInfo)
+		return
+	}
+	err := sh.calc.AddDebtsByAliases(model.GroupID(m.Chat.ID), cmd.generateDebts()...)
+	if err != nil {
+		bot.SendInternalError(m.Chat, loglInfo)
+		return
+	}
+	bot.Send(m.Chat, "debt shared", loglInfo)
+}
+
 // ShareDebt share debt between pointed participants e.g.
 // A send: '/share 42.0 in restaurant with @B @C'
 // that means A paid 42.0 for B and C. Share command spread this amount between
 // A, B and C. So, B will owe A 14.0, C will owe A 14.0.
-func ShareDebt(bot *tb.Bot, calc calculator.Service, logger log.Logger) {
+func ShareDebt(bot bot.Bot, calc calculator.Service, logger log.Logger) {
 	handler := &shareHandler{
-		botHelper: &botLogHelper{Bot: bot, logger: logger},
-		calc:      calc,
-		logger:    logger,
+		calc:   calc,
+		logger: logger,
 	}
 
-	bot.Handle("/share", handler.handle)
-}
-
-type shareHandler struct {
-	botHelper *botLogHelper
-	calc      calculator.Service
-	logger    log.Logger
+	bot.Handle("/share", notPrivateOnlyMiddleware(handler.handle))
 }
 
 type debtCommand struct {
@@ -68,25 +82,6 @@ func (cmd *debtCommand) generateDebts() []calculator.DebtWithAliases {
 		debts = append(debts, d)
 	}
 	return debts
-}
-
-func (sh *shareHandler) handle(m *tb.Message) {
-	loglInfo := formLogInfo(m, "ShareDebt")
-	if m.Private() {
-		sh.botHelper.Send(m.Chat, stubMessage, loglInfo)
-		return
-	}
-	cmd, customErr := sh.parseCommand(m.Sender.Username, m.Text)
-	if customErr != nil {
-		sh.botHelper.Send(m.Chat, customErr.userError, loglInfo)
-		return
-	}
-	err := sh.calc.AddDebtsByAliases(model.GroupID(m.Chat.ID), cmd.generateDebts()...)
-	if err != nil {
-		sh.botHelper.SendInternalError(m.Chat, loglInfo)
-		return
-	}
-	sh.botHelper.Send(m.Chat, "debt shared", loglInfo)
 }
 
 func (sh *shareHandler) parseCommand(invoker string, text string) (*debtCommand, *Error) {
