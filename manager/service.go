@@ -1,6 +1,6 @@
 package manager
 
-import "github.com/cloudedcat/finance-bot/model"
+import "github.com/cloudedcat/debt-bot/model"
 
 // Service manages groups and participants
 type Service interface {

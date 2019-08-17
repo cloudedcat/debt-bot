@@ -3,13 +3,13 @@ package main
 import (
 	"time"
 
-	"github.com/cloudedcat/finance-bot/bot"
-	"github.com/cloudedcat/finance-bot/bunt"
-	"github.com/cloudedcat/finance-bot/calculator"
-	"github.com/cloudedcat/finance-bot/handle"
-	"github.com/cloudedcat/finance-bot/log"
-	"github.com/cloudedcat/finance-bot/manager"
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/bot"
+	"github.com/cloudedcat/debt-bot/bunt"
+	"github.com/cloudedcat/debt-bot/calculator"
+	"github.com/cloudedcat/debt-bot/handle"
+	"github.com/cloudedcat/debt-bot/log"
+	"github.com/cloudedcat/debt-bot/manager"
+	"github.com/cloudedcat/debt-bot/model"
 	"github.com/tidwall/buntdb"
 
 	tb "gopkg.in/tucnak/telebot.v2"

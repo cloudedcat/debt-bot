@@ -3,10 +3,10 @@ package handle
 import (
 	"fmt"
 
-	"github.com/cloudedcat/finance-bot/bot"
-	"github.com/cloudedcat/finance-bot/log"
-	"github.com/cloudedcat/finance-bot/manager"
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/bot"
+	"github.com/cloudedcat/debt-bot/log"
+	"github.com/cloudedcat/debt-bot/manager"
+	"github.com/cloudedcat/debt-bot/model"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 

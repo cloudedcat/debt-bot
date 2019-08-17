@@ -3,7 +3,7 @@ package handle
 import (
 	"testing"
 
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/model"
 	"github.com/google/go-cmp/cmp"
 )
 

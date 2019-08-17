@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/model"
 )
 
 func FatalOnError(t *testing.T, err error, context string) {

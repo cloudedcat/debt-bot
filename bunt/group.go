@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/model"
 	"github.com/tidwall/buntdb"
 )
 

@@ -1,4 +1,4 @@
-module github.com/cloudedcat/finance-bot
+module github.com/cloudedcat/debt-bot
 
 go 1.12
 

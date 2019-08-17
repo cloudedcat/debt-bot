@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudedcat/finance-bot/bot"
-	"github.com/cloudedcat/finance-bot/calculator"
-	"github.com/cloudedcat/finance-bot/log"
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/bot"
+	"github.com/cloudedcat/debt-bot/calculator"
+	"github.com/cloudedcat/debt-bot/log"
+	"github.com/cloudedcat/debt-bot/model"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 

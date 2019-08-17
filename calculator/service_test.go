@@ -3,9 +3,9 @@ package calculator
 import (
 	"testing"
 
-	"github.com/cloudedcat/finance-bot/bunt"
-	"github.com/cloudedcat/finance-bot/model"
-	"github.com/cloudedcat/finance-bot/testset"
+	"github.com/cloudedcat/debt-bot/bunt"
+	"github.com/cloudedcat/debt-bot/model"
+	"github.com/cloudedcat/debt-bot/testset"
 	"github.com/tidwall/buntdb"
 )
 

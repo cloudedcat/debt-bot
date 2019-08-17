@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudedcat/finance-bot/model"
-	"github.com/cloudedcat/finance-bot/testset"
+	"github.com/cloudedcat/debt-bot/model"
+	"github.com/cloudedcat/debt-bot/testset"
 	"github.com/google/go-cmp/cmp"
 )
 

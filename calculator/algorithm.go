@@ -4,7 +4,7 @@ import (
 	"math"
 	"sort"
 
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/model"
 )
 
 const precision = 0.01

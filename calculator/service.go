@@ -3,7 +3,7 @@ package calculator
 import (
 	"errors"
 
-	"github.com/cloudedcat/finance-bot/model"
+	"github.com/cloudedcat/debt-bot/model"
 )
 
 type Service interface {
