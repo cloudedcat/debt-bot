@@ -159,7 +159,7 @@ func (h *handlerShowDebtHistory) formText(particID model.ParticipantID, debts []
 		}
 
 		text += fmt.Sprintf("%s: %s to @%s %.2f %s\n",
-			d.Date.Format("02.01.2006 15:04:05"), action, whom, d.Amount, where)
+			d.Date.Format("02.01.06 15:04"), action, whom, d.Amount, where)
 	}
 	return text
 }

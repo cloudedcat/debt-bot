@@ -23,3 +23,4 @@ Telegram bot for recording restaurant bills and split them with participants eff
     >> `@C -> @B - 4.00`
 
 * `history` - shows personal history of debts
+* `amnesty` - wipe off all debts, be careful!
