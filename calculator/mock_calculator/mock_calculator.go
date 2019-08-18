@@ -68,6 +68,20 @@ func (mr *MockServiceMockRecorder) CalculateDebts(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateDebts", reflect.TypeOf((*MockService)(nil).CalculateDebts), arg0)
 }
 
+// ClearDebts mocks base method
+func (m *MockService) ClearDebts(arg0 model.GroupID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearDebts", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearDebts indicates an expected call of ClearDebts
+func (mr *MockServiceMockRecorder) ClearDebts(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearDebts", reflect.TypeOf((*MockService)(nil).ClearDebts), arg0)
+}
+
 // FindDebts mocks base method
 func (m *MockService) FindDebts(arg0 model.GroupID, arg1 model.ParticipantID) ([]calculator.DetailedDebt, error) {
 	m.ctrl.T.Helper()

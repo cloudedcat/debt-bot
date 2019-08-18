@@ -57,6 +57,7 @@ func main() {
 	handle.ShareDebt(bot, calculatorService, logger)
 	handle.Calculate(bot, calculatorService, logger)
 	handle.ShowDebtHistory(bot, calculatorService, logger)
+	handle.Amnesty(bot, calculatorService, logger)
 
 	bot.Start()
 }

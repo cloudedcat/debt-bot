@@ -14,6 +14,7 @@ type Service interface {
 	// AddDebts(groupID model.GroupID, debts ...*model.Debt) error
 	CalculateDebts(groupID model.GroupID) ([]DetailedDebt, error)
 	FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]DetailedDebt, error)
+	ClearDebts(groupID model.GroupID) error
 }
 
 var ErrParticipantNotFound = errors.New("participant not found")
@@ -165,4 +166,8 @@ func (s *service) FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]D
 		}
 	}
 	return selected, nil
+}
+
+func (s *service) ClearDebts(groupID model.GroupID) error {
+	return s.debts.Clear(groupID)
 }

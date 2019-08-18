@@ -169,3 +169,26 @@ func ShowDebtHistory(bot bot.Bot, calc calculator.Service, logger log.Logger) {
 	hdl := &handlerShowDebtHistory{calc: calc, logger: logger}
 	bot.Handle("/history", notPrivateOnlyMiddleware(hdl.handle))
 }
+
+type handlerAmnesty struct {
+	calc   calculator.Service
+	logger log.Logger
+}
+
+func (h *handlerAmnesty) handle(bot bot.Bot, m *tb.Message) {
+	logInfo := formLogInfo(m, "Amnesty")
+	groupID := model.GroupID(m.Chat.ID)
+	err := h.calc.ClearDebts(groupID)
+	if err != nil {
+		bot.SendInternalError(m.Chat, logInfo)
+		h.logger.IfErrorw(err, "failed to clear debts", logInfo...)
+		return
+	}
+	bot.Send(m.Chat, "debts have been wiped", logInfo)
+}
+
+// Amnesty removes all debts
+func Amnesty(bot bot.Bot, calc calculator.Service, logger log.Logger) {
+	hdl := &handlerAmnesty{calc: calc, logger: logger}
+	bot.Handle("/amnesty", notPrivateOnlyMiddleware(hdl.handle))
+}
