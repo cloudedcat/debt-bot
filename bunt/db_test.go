@@ -11,7 +11,7 @@ import (
 
 func TestIndexRestoring(t *testing.T) {
 	persDB := "persistent.db"
-	db, err := Open(persDB)
+	db, err := Open(persDB, true)
 	defer os.Remove(persDB)
 
 	testset.FatalOnError(t, err, "failed to open db")
@@ -24,7 +24,7 @@ func TestIndexRestoring(t *testing.T) {
 	err = db.Close()
 	testset.FatalOnError(t, err, "failed to close db")
 
-	db, err = Open(persDB)
+	db, err = Open(persDB, true)
 	testset.FatalOnError(t, err, "failed to reopen db")
 
 	gotIndexes, err := db.Indexes()

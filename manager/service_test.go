@@ -10,7 +10,7 @@ import (
 )
 
 func testOpen(t *testing.T) *buntdb.DB {
-	db, err := bunt.Open(":memory:")
+	db, err := bunt.Open(":memory:", false)
 	testset.FatalOnError(t, err, "failed to open db connection")
 	return db
 }

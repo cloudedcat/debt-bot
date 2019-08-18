@@ -15,7 +15,7 @@ var groupSet []model.GroupID
 
 // Open opens a database at the provided path.
 // If the database does not exist then it will be created automatically.
-func Open(path string) (*buntdb.DB, error) {
+func Open(path string, shouldRestoreIndex bool) (*buntdb.DB, error) {
 	// dbExists := doesDBExist(path)
 
 	db, err := buntdb.Open(path)
@@ -28,7 +28,10 @@ func Open(path string) (*buntdb.DB, error) {
 		if err := restoreGroupSet(tx); err != nil {
 			return err
 		}
-		return restoreIndexes(tx)
+		if shouldRestoreIndex {
+			return restoreIndexes(tx)
+		}
+		return nil
 	})
 
 	if err != nil {

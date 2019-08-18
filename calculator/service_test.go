@@ -20,7 +20,7 @@ func testDebtWithAliases() []DebtWithAliases {
 }
 
 func testOpen(t *testing.T) *buntdb.DB {
-	db, err := bunt.Open(":memory:")
+	db, err := bunt.Open(":memory:", false)
 	testset.FatalOnError(t, err, "failed to open db connection")
 	return db
 }
@@ -47,6 +47,8 @@ func addDebtsViaService(t *testing.T, service Service) {
 
 func TestAddDebts(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	addGroup(t, db)
 	addParticipants(t, db)
 	debts, partics := bunt.NewDebtRepository(db), bunt.NewParticipantRepository(db)
@@ -63,6 +65,8 @@ func TestAddDebts(t *testing.T) {
 
 func TestCalculateDebts(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	addGroup(t, db)
 	addParticipants(t, db)
 	debts, partics := bunt.NewDebtRepository(db), bunt.NewParticipantRepository(db)
@@ -80,6 +84,8 @@ func TestCalculateDebts(t *testing.T) {
 
 func TestFindDebts(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	addGroup(t, db)
 	addParticipants(t, db)
 	debts, partics := bunt.NewDebtRepository(db), bunt.NewParticipantRepository(db)

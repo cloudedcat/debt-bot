@@ -24,7 +24,7 @@ func newBuntRepositories(db *buntdb.DB) (
 func main() {
 	logger := log.NewZapLogger()
 	logger.Infow("Bot initializing...")
-	db, err := bunt.Open(config.DBName)
+	db, err := bunt.Open(config.DBName, true)
 	if err != nil {
 		logger.Fatalw(err.Error())
 	}

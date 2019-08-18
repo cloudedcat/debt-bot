@@ -2,7 +2,6 @@ package bunt
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/cloudedcat/debt-bot/model"
@@ -12,9 +11,7 @@ import (
 )
 
 func testOpen(t *testing.T) *buntdb.DB {
-	bdName := "tmp.db"
-	os.Remove(bdName)
-	db, err := Open(bdName, false)
+	db, err := Open(":memory:", false)
 	if err != nil {
 		panic("failed to open db")
 	}
