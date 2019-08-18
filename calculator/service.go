@@ -4,6 +4,7 @@ package calculator
 
 import (
 	"errors"
+	"time"
 
 	"github.com/cloudedcat/debt-bot/model"
 )
@@ -11,15 +12,14 @@ import (
 type Service interface {
 	AddDebtsByAliases(groupID model.GroupID, debts ...DebtWithAliases) error
 	// AddDebts(groupID model.GroupID, debts ...*model.Debt) error
-	CalculateDebts(groupID model.GroupID) ([]FinalDebt, error)
-	FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]*model.Debt, error)
+	CalculateDebts(groupID model.GroupID) ([]DetailedDebt, error)
+	FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]DetailedDebt, error)
 }
 
 var ErrParticipantNotFound = errors.New("participant not found")
 
-// FinalDebt contains final sum that one participant owe another
-// FinalDebt uses model.Debt inside as a value object
-type FinalDebt struct {
+// DetailedDebt contains Borrower and Lender entities inside
+type DetailedDebt struct {
 	Borrower *model.Participant
 	Lender   *model.Participant
 	model.Debt
@@ -63,6 +63,7 @@ func (s *service) AddDebtsByAliases(groupID model.GroupID, aliasDebts ...DebtWit
 		return err
 	}
 	aliasMap := partics.AsAliasMap()
+	timeNow := time.Now()
 
 	var debts []*model.Debt
 	for _, aliasDebt := range aliasDebts {
@@ -75,6 +76,7 @@ func (s *service) AddDebtsByAliases(groupID model.GroupID, aliasDebts ...DebtWit
 			BorrowerID: borrower.ID,
 			Tag:        aliasDebt.Tag,
 			Amount:     aliasDebt.Amount,
+			Date:       timeNow,
 		}
 		if debt.ID, err = s.debts.NextID(groupID); err != nil {
 			return err
@@ -96,7 +98,7 @@ func (s *service) AddDebtsByAliases(groupID model.GroupID, aliasDebts ...DebtWit
 //   A owe to B 5 coins
 //   B owe to C 10 coins
 // C owe nothing to A, so C is absent in FinalDebt array as borrower
-func (s *service) CalculateDebts(groupID model.GroupID) ([]FinalDebt, error) {
+func (s *service) CalculateDebts(groupID model.GroupID) ([]DetailedDebt, error) {
 	allDebts, err := s.debts.FindAll(groupID)
 	if err != nil {
 		return nil, err
@@ -127,10 +129,10 @@ func (s *service) calculate(debts []*model.Debt) []calculatedDebt {
 	return calculate(borrorwers, lenders)
 }
 
-func (s *service) composeFinalDebts(debts []calculatedDebt, partics model.Participants) (final []FinalDebt) {
+func (s *service) composeFinalDebts(debts []calculatedDebt, partics model.Participants) (final []DetailedDebt) {
 	particMap := partics.AsMap()
 	for _, debt := range debts {
-		fDebt := FinalDebt{
+		fDebt := DetailedDebt{
 			Borrower: particMap[debt.BorrowerID],
 			Lender:   particMap[debt.LenderID],
 			Debt:     model.Debt(debt),
@@ -140,15 +142,26 @@ func (s *service) composeFinalDebts(debts []calculatedDebt, partics model.Partic
 	return
 }
 
-func (s *service) FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]*model.Debt, error) {
+func (s *service) FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]DetailedDebt, error) {
 	allDebts, err := s.debts.FindAll(groupID)
 	if err != nil {
 		return nil, err
 	}
-	selected := []*model.Debt{}
+
+	partics, err := s.participants.FindAll(groupID)
+	if err != nil {
+		return nil, err
+	}
+	particMap := partics.AsMap()
+	selected := []DetailedDebt{}
 	for _, d := range allDebts {
 		if d.BorrowerID == pID || d.LenderID == pID {
-			selected = append(selected, d)
+			detailedDebt := DetailedDebt{
+				Borrower: particMap[d.BorrowerID],
+				Lender:   particMap[d.LenderID],
+				Debt:     *d,
+			}
+			selected = append(selected, detailedDebt)
 		}
 	}
 	return selected, nil

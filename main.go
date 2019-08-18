@@ -28,6 +28,12 @@ func main() {
 	if err != nil {
 		logger.Fatalw(err.Error())
 	}
+
+	defer func() {
+		err := db.Close()
+		logger.IfErrorw(err, "failed to close db")
+	}()
+
 	groups, partics, debts := newBuntRepositories(db)
 
 	managerService := manager.NewService(groups, partics)
@@ -46,10 +52,11 @@ func main() {
 	logger.Infow("Bot authorized")
 
 	handle.AddToChat(bot, managerService, logger)
-	handle.RegisterParticipant(bot, managerService, logger)
 	handle.ListParticipants(bot, managerService, logger)
+	handle.RegisterParticipant(bot, managerService, logger)
 	handle.ShareDebt(bot, calculatorService, logger)
 	handle.Calculate(bot, calculatorService, logger)
+	handle.ShowDebtHistory(bot, calculatorService, logger)
 
 	bot.Start()
 }

@@ -54,10 +54,10 @@ func (mr *MockServiceMockRecorder) AddDebtsByAliases(arg0 interface{}, arg1 ...i
 }
 
 // CalculateDebts mocks base method
-func (m *MockService) CalculateDebts(arg0 model.GroupID) ([]calculator.FinalDebt, error) {
+func (m *MockService) CalculateDebts(arg0 model.GroupID) ([]calculator.DetailedDebt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CalculateDebts", arg0)
-	ret0, _ := ret[0].([]calculator.FinalDebt)
+	ret0, _ := ret[0].([]calculator.DetailedDebt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -69,10 +69,10 @@ func (mr *MockServiceMockRecorder) CalculateDebts(arg0 interface{}) *gomock.Call
 }
 
 // FindDebts mocks base method
-func (m *MockService) FindDebts(arg0 model.GroupID, arg1 model.ParticipantID) ([]*model.Debt, error) {
+func (m *MockService) FindDebts(arg0 model.GroupID, arg1 model.ParticipantID) ([]calculator.DetailedDebt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindDebts", arg0, arg1)
-	ret0, _ := ret[0].([]*model.Debt)
+	ret0, _ := ret[0].([]calculator.DetailedDebt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

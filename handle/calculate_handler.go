@@ -27,9 +27,9 @@ func (h *calculateHandler) handle(bot bot.Bot, m *tb.Message) {
 	bot.Send(m.Chat, h.formMessage(finalDebts), logInfo)
 }
 
-func (h *calculateHandler) formMessage(debts []calculator.FinalDebt) (resp string) {
+func (h *calculateHandler) formMessage(debts []calculator.DetailedDebt) (resp string) {
 	if len(debts) == 0 {
-		resp = "there ain't debts"
+		return "list of debts is empty"
 	}
 	resp = "list of debts:\n"
 	for _, debt := range debts {

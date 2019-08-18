@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudedcat/debt-bot/bot"
+	"github.com/cloudedcat/debt-bot/calculator"
 	"github.com/cloudedcat/debt-bot/log"
 	"github.com/cloudedcat/debt-bot/manager"
 	"github.com/cloudedcat/debt-bot/model"
@@ -84,7 +85,7 @@ func (h *handlerRegisterParticipant) handle(bot bot.Bot, m *tb.Message) {
 
 // RegisterParticipant adds handler for registering new paticipant in group
 func RegisterParticipant(bot bot.Bot, mng manager.Service, logger log.Logger) {
-	hdl := handlerRegisterParticipant{mng: mng, logger: logger}
+	hdl := &handlerRegisterParticipant{mng: mng, logger: logger}
 	bot.Handle("/reg", notPrivateOnlyMiddleware(hdl.handle))
 }
 
@@ -114,6 +115,57 @@ func (h *handlerListParticipant) handle(bot bot.Bot, m *tb.Message) {
 // ListParticipants shows list of partisipants
 func ListParticipants(bot bot.Bot, mng manager.Service, logger log.Logger) {
 	hdl := &handlerListParticipant{mng: mng, logger: logger}
-
 	bot.Handle("/list", notPrivateOnlyMiddleware(hdl.handle))
+}
+
+type handlerShowDebtHistory struct {
+	calc   calculator.Service
+	logger log.Logger
+}
+
+func (h *handlerShowDebtHistory) handle(bot bot.Bot, m *tb.Message) {
+	logInfo := formLogInfo(m, "ParticipantList")
+	groupID := model.GroupID(m.Chat.ID)
+	particID := model.ParticipantID(m.Sender.ID)
+	debts, err := h.calc.FindDebts(groupID, particID)
+	if err != nil {
+		bot.SendInternalError(m.Chat, logInfo)
+		h.logger.IfErrorw(err, "failed to find debts", logInfo...)
+		return
+	}
+	text := h.formText(particID, debts)
+
+	if text == "" {
+		text = "debt history is empty"
+	} else {
+		text = "debt history:\n" + text
+	}
+	bot.Send(m.Chat, text, logInfo)
+}
+
+func (h *handlerShowDebtHistory) formText(particID model.ParticipantID, debts []calculator.DetailedDebt) string {
+	text := ""
+	for _, d := range debts {
+		action, whom := "", ""
+		if d.BorrowerID == particID {
+			action, whom = "owe", string(d.Lender.Alias)
+		} else {
+			action, whom = "lend", string(d.Borrower.Alias)
+		}
+
+		where := ""
+		if d.Tag != "" {
+			where = fmt.Sprintf("in %s", d.Tag)
+		}
+
+		text += fmt.Sprintf("%s: %s to @%s %.2f %s\n",
+			d.Date.Format("02.01.2006 15:04:05"), action, whom, d.Amount, where)
+	}
+	return text
+}
+
+// ShowDebtHistory shows personal history of debts
+func ShowDebtHistory(bot bot.Bot, calc calculator.Service, logger log.Logger) {
+	hdl := &handlerShowDebtHistory{calc: calc, logger: logger}
+	bot.Handle("/history", notPrivateOnlyMiddleware(hdl.handle))
 }
