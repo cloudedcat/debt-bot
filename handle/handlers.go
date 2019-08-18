@@ -33,12 +33,12 @@ func formLogInfo(m *tb.Message, handlerName string) []interface{} {
 	}
 }
 
-type addToChatHandler struct {
+type handlerAddToChat struct {
 	mng    manager.Service
 	logger log.Logger
 }
 
-func (h *addToChatHandler) handle(_ bot.Bot, m *tb.Message) {
+func (h *handlerAddToChat) handle(_ bot.Bot, m *tb.Message) {
 	logInfo := formLogInfo(m, "AddToChat")
 
 	id := model.GroupID(m.Chat.ID)
@@ -51,19 +51,23 @@ func (h *addToChatHandler) handle(_ bot.Bot, m *tb.Message) {
 
 // AddToChat handles adding bot to new chat
 func AddToChat(bot bot.Bot, mng manager.Service, logger log.Logger) {
-	hdl := &addToChatHandler{mng: mng, logger: logger}
+	hdl := &handlerAddToChat{mng: mng, logger: logger}
 	bot.Handle(tb.OnAddedToGroup, hdl.handle)
 }
 
-type registerParticipantHandler struct {
+type handlerRegisterParticipant struct {
 	bot    bot.Bot
 	mng    manager.Service
 	logger log.Logger
 }
 
-func (h *registerParticipantHandler) handle(bot bot.Bot, m *tb.Message) {
+func (h *handlerRegisterParticipant) handle(bot bot.Bot, m *tb.Message) {
 	logInfo := formLogInfo(m, "RegisterParticipant")
 	groupID := model.GroupID(m.Chat.ID)
+	if m.Sender.Username == "" {
+		bot.Send(m.Chat, "please, set username in Telegram", logInfo)
+		return
+	}
 	partic := model.Participant{
 		ID:        model.ParticipantID(m.Sender.ID),
 		Alias:     model.MustBuildAlias(m.Sender.Username),
@@ -80,16 +84,16 @@ func (h *registerParticipantHandler) handle(bot bot.Bot, m *tb.Message) {
 
 // RegisterParticipant adds handler for registering new paticipant in group
 func RegisterParticipant(bot bot.Bot, mng manager.Service, logger log.Logger) {
-	hdl := registerParticipantHandler{mng: mng, logger: logger}
+	hdl := handlerRegisterParticipant{mng: mng, logger: logger}
 	bot.Handle("/reg", notPrivateOnlyMiddleware(hdl.handle))
 }
 
-type participantListHandler struct {
+type handlerListParticipant struct {
 	mng    manager.Service
 	logger log.Logger
 }
 
-func (h *participantListHandler) handle(bot bot.Bot, m *tb.Message) {
+func (h *handlerListParticipant) handle(bot bot.Bot, m *tb.Message) {
 	logInfo := formLogInfo(m, "ParticipantList")
 	groupID := model.GroupID(m.Chat.ID)
 	partics, err := h.mng.ListParticipant(groupID)
@@ -107,9 +111,9 @@ func (h *participantListHandler) handle(bot bot.Bot, m *tb.Message) {
 	bot.Send(m.Chat, text, logInfo)
 }
 
-// ParticipantList shows list of partisipants
-func ParticipantList(bot bot.Bot, mng manager.Service, logger log.Logger) {
-	hdl := &participantListHandler{mng: mng, logger: logger}
+// ListParticipants shows list of partisipants
+func ListParticipants(bot bot.Bot, mng manager.Service, logger log.Logger) {
+	hdl := &handlerListParticipant{mng: mng, logger: logger}
 
 	bot.Handle("/list", notPrivateOnlyMiddleware(hdl.handle))
 }

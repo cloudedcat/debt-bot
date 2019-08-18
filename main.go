@@ -47,7 +47,7 @@ func main() {
 
 	handle.AddToChat(bot, managerService, logger)
 	handle.RegisterParticipant(bot, managerService, logger)
-	handle.ParticipantList(bot, managerService, logger)
+	handle.ListParticipants(bot, managerService, logger)
 	handle.ShareDebt(bot, calculatorService, logger)
 	handle.Calculate(bot, calculatorService, logger)
 

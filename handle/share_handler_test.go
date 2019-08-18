@@ -3,9 +3,32 @@ package handle
 import (
 	"testing"
 
+	"github.com/cloudedcat/debt-bot/bot/mock_bot"
+	"github.com/cloudedcat/debt-bot/calculator/mock_calculator"
+	"github.com/cloudedcat/debt-bot/log"
 	"github.com/cloudedcat/debt-bot/model"
+	"github.com/cloudedcat/debt-bot/testset"
+	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestHandlerShare(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	bot := mock_bot.NewMockBot(ctrl)
+	calc := mock_calculator.NewMockService(ctrl)
+	logger := log.NewZapLogger()
+	hdl := handlerShare{
+		calc:   calc,
+		logger: logger,
+	}
+	m := testTextMessage(testUser(1, "trillian", "Trillian"), "/share 42.0 in Milliways with @ArthurDent @FordPrefect")
+
+	calc.EXPECT().AddDebtsByAliases(testset.GroupID, gomock.Any(), gomock.Any()).Return(nil)
+	bot.EXPECT().Send(testChat(), gomock.Any(), gomock.Any())
+	hdl.handle(bot, m)
+}
 
 var testShareParseCommandCases = []struct {
 	invoker string
@@ -48,7 +71,7 @@ var testShareParseCommandCases = []struct {
 }
 
 func TestShareParseCommand(t *testing.T) {
-	handler := &shareHandler{}
+	handler := &handlerShare{}
 	for i, testCase := range testShareParseCommandCases {
 		result, customErr := handler.parseCommand(testCase.invoker, testCase.text)
 		if testCase.isError {

@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock_calculator/mock_calculator.go github.com/cloudedcat/debt-bot/calculator Service
+
 package calculator
 
 import (

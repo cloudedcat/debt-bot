@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock_bot/mock_bot.go github.com/cloudedcat/debt-bot/bot Bot
+
 package bot
 
 import (

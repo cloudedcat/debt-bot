@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock_manager/mock_manager.go github.com/cloudedcat/debt-bot/manager Service
+
 package manager
 
 import "github.com/cloudedcat/debt-bot/model"

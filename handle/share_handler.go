@@ -29,12 +29,12 @@ const (
 	uErrParticCollision = "lender can't be borrower in the same time"
 )
 
-type shareHandler struct {
+type handlerShare struct {
 	calc   calculator.Service
 	logger log.Logger
 }
 
-func (sh *shareHandler) handle(bot bot.Bot, m *tb.Message) {
+func (sh *handlerShare) handle(bot bot.Bot, m *tb.Message) {
 	loglInfo := formLogInfo(m, "ShareDebt")
 	cmd, customErr := sh.parseCommand(m.Sender.Username, m.Text)
 	if customErr != nil {
@@ -54,7 +54,7 @@ func (sh *shareHandler) handle(bot bot.Bot, m *tb.Message) {
 // that means A paid 42.0 for B and C. Share command spread this amount between
 // A, B and C. So, B will owe A 14.0, C will owe A 14.0.
 func ShareDebt(bot bot.Bot, calc calculator.Service, logger log.Logger) {
-	handler := &shareHandler{
+	handler := &handlerShare{
 		calc:   calc,
 		logger: logger,
 	}
@@ -84,7 +84,7 @@ func (cmd *debtCommand) generateDebts() []calculator.DebtWithAliases {
 	return debts
 }
 
-func (sh *shareHandler) parseCommand(invoker string, text string) (*debtCommand, *Error) {
+func (sh *handlerShare) parseCommand(invoker string, text string) (*debtCommand, *Error) {
 	text = sh.prepareText(text)
 	re := regexp.MustCompile(`^/share ((\d+)(\.\d+)?) (in (.+) )?with (.*)$`)
 	result := re.FindStringSubmatch(text)
@@ -115,13 +115,13 @@ func (sh *shareHandler) parseCommand(invoker string, text string) (*debtCommand,
 	return cmd, nil
 }
 
-func (sh *shareHandler) prepareText(text string) string {
+func (sh *handlerShare) prepareText(text string) string {
 	space := regexp.MustCompile(`\s+`)
 	text = space.ReplaceAllString(text, " ")
 	return strings.TrimSpace(text)
 }
 
-func (sh *shareHandler) processBorrower(lender model.Alias, rawBorrower string) (model.Alias, *Error) {
+func (sh *handlerShare) processBorrower(lender model.Alias, rawBorrower string) (model.Alias, *Error) {
 	b, err := model.BuildAlias(rawBorrower)
 	if err != nil {
 		return "", &Error{
