@@ -9,16 +9,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestDoesDBExist(t *testing.T) {
-	tmpDB := "tmp.db"
-	Open(tmpDB)
-	defer os.Remove(tmpDB)
-
-	if !doesDBExist(tmpDB) {
-		t.Fatal("expected that doesDBExist return true")
-	}
-}
-
 func TestIndexRestoring(t *testing.T) {
 	persDB := "persistent.db"
 	db, err := Open(persDB)

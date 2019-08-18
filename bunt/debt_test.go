@@ -2,6 +2,7 @@ package bunt
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/cloudedcat/debt-bot/model"
@@ -11,8 +12,12 @@ import (
 )
 
 func testOpen(t *testing.T) *buntdb.DB {
-	db, err := Open(":memory:")
-	testset.FatalOnError(t, err, "failed to open db connection")
+	bdName := "tmp.db"
+	os.Remove(bdName)
+	db, err := Open(bdName, false)
+	if err != nil {
+		panic("failed to open db")
+	}
 	return db
 }
 
@@ -39,6 +44,7 @@ func testUploadAll(t *testing.T, debts []*model.Debt, db *buntdb.DB) {
 
 func TestDebtStoreFind(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
 	debts := testset.Debts()
 	testUploadAll(t, debts, db)
 	repo := NewDebtRepository(db)
@@ -53,6 +59,8 @@ func TestDebtStoreFind(t *testing.T) {
 
 func TestDebtFindAll(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	debts := testset.Debts()
 	testUploadAll(t, debts, db)
 	repo := NewDebtRepository(db)
@@ -66,6 +74,8 @@ func TestDebtFindAll(t *testing.T) {
 
 func TestDebtNextID(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	debts := testset.Debts()
 	testUploadAll(t, debts, db)
 	repo := NewDebtRepository(db)

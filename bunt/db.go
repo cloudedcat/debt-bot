@@ -3,7 +3,6 @@ package bunt
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/cloudedcat/debt-bot/model"
 	"github.com/tidwall/buntdb"
@@ -70,16 +69,6 @@ func createDebtParticipantIndexes(tx *buntdb.Tx, id model.GroupID) error {
 		}
 	}
 	return nil
-}
-
-func doesDBExist(path string) bool {
-	inMemory := path == ":memory:"
-	if inMemory {
-		return false
-	}
-
-	_, err := os.Stat(path)
-	return !os.IsNotExist(err)
 }
 
 func patternByIndex(index string) string {

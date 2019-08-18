@@ -6,14 +6,11 @@ import (
 
 	"github.com/cloudedcat/debt-bot/model"
 	"github.com/cloudedcat/debt-bot/testset"
+	"github.com/tidwall/buntdb"
 )
 
-func testGroupRepository(t *testing.T) model.GroupRepository {
-	repo, err := Open(":memory:")
-	if err != nil {
-		t.Fatal(err)
-	}
-	return &groupRepository{db: repo}
+func testGroupRepository(t *testing.T, db *buntdb.DB) model.GroupRepository {
+	return &groupRepository{db: db}
 }
 
 func uploadTestGroup(t *testing.T, group *model.Group, repo model.GroupRepository) {
@@ -22,7 +19,10 @@ func uploadTestGroup(t *testing.T, group *model.Group, repo model.GroupRepositor
 }
 
 func TestGroupStoreFind(t *testing.T) {
-	repo := testGroupRepository(t)
+	db := testOpen(t)
+	defer db.Close()
+
+	repo := testGroupRepository(t, db)
 	var expectedGroups []*model.Group
 
 	for i := 1; i < 6; i++ {
@@ -34,7 +34,6 @@ func TestGroupStoreFind(t *testing.T) {
 	for _, group := range expectedGroups {
 		_, err := repo.Find(group.ID)
 		testset.FatalOnError(t, err, "failed to find group")
-
 	}
 
 	unexpectedGroupID := model.GroupID(42)

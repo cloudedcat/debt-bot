@@ -18,6 +18,8 @@ func uploadTestParticipants(t *testing.T, groupID model.GroupID, repo model.Part
 
 func TestParticipantStoreFind(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	gRepo, repo := NewGroupRepository(db), NewParticipantRepository(db)
 	uploadTestGroup(t, model.BuildGroup(testset.GroupID), gRepo)
 	uploadTestParticipants(t, testset.GroupID, repo)
@@ -33,6 +35,8 @@ func TestParticipantStoreFind(t *testing.T) {
 
 func TestParticipantFindAll(t *testing.T) {
 	db := testOpen(t)
+	defer db.Close()
+
 	gRepo, repo := NewGroupRepository(db), NewParticipantRepository(db)
 	uploadTestGroup(t, model.BuildGroup(testset.GroupID), gRepo)
 	uploadTestParticipants(t, testset.GroupID, repo)
