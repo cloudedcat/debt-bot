@@ -119,6 +119,25 @@ func (r *debtRepository) nextID(tx *buntdb.Tx, groupID model.GroupID) (model.Deb
 	return model.DebtID(c + 1), nil
 }
 
+func (r *debtRepository) Clear(groupID model.GroupID) error {
+	return r.db.Update(func(tx *buntdb.Tx) error {
+		keys := []string{}
+		txErr := tx.Ascend(indexDebt(groupID), func(key, _ string) bool {
+			keys = append(keys, key)
+			return true
+		})
+		if txErr != nil {
+			return txErr
+		}
+		for _, key := range keys {
+			if _, err := tx.Delete(key); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (r *debtRepository) debtCounterKey(groupID model.GroupID) string {
 	return fmt.Sprintf("counter:%d:debt", int(groupID))
 }

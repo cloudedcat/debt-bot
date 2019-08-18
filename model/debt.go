@@ -44,4 +44,5 @@ type DebtRepository interface {
 	Find(groupID GroupID, id DebtID) (*Debt, error)
 	Store(groupID GroupID, debts ...*Debt) error
 	NextID(groupID GroupID) (DebtID, error)
+	Clear(groupID GroupID) error
 }

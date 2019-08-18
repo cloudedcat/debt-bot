@@ -85,3 +85,20 @@ func TestDebtNextID(t *testing.T) {
 		t.Fatalf("expected next id is %v but got %v", expected, got)
 	}
 }
+
+func TestDebtClear(t *testing.T) {
+	db := testOpen(t)
+	defer db.Close()
+
+	debts := testset.Debts()
+	testUploadAll(t, debts, db)
+	repo := NewDebtRepository(db)
+
+	err := repo.Clear(testset.GroupID)
+	testset.FatalOnError(t, err, "failed to clear debts")
+	got, err := repo.FindAll(testset.GroupID)
+	testset.FatalOnError(t, err, "failed to find all debts")
+	if len(got) != 0 {
+		t.Fatalf("expected 0 debts but got %d", len(got))
+	}
+}
