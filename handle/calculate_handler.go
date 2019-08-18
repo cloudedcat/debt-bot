@@ -33,7 +33,7 @@ func (h *calculateHandler) formMessage(debts []calculator.FinalDebt) (resp strin
 	}
 	resp = "list of debts:\n"
 	for _, debt := range debts {
-		resp += fmt.Sprintf("	@%s -> @%s - %.2f",
+		resp += fmt.Sprintf("	@%s -> @%s - %.2f\n",
 			debt.Borrower.Alias, debt.Lender.Alias, debt.Amount)
 	}
 	return resp
