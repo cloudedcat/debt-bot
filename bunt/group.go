@@ -43,18 +43,20 @@ func (r *groupRepository) Find(id model.GroupID) (*model.Group, error) {
 
 func (r *groupRepository) Store(group *model.Group) error {
 	return r.db.Update(func(tx *buntdb.Tx) error {
-		indexes := []string{indexDebt(group.ID), indexParticipant(group.ID)}
-		for _, index := range indexes {
-			err := tx.CreateIndex(index, patternByIndex(index), buntdb.IndexJSON("ID"))
-			if err != nil {
-				return err
-			}
+		if err := createDebtParticipantIndexes(tx, group.ID); err != nil {
+			return err
 		}
 		composedGroup, err := composeGroup(group)
 		if err != nil {
 			return err
 		}
-		_, _, err = tx.Set(r.key(group.ID), composedGroup, nil)
+		if _, _, err = tx.Set(r.key(group.ID), composedGroup, nil); err != nil {
+			return err
+		}
+
+		groupSet = append(groupSet, group.ID)
+		raw, _ := json.Marshal(groupSet)
+		_, _, err = tx.Set("group_set", string(raw), nil)
 		return err
 	})
 }
