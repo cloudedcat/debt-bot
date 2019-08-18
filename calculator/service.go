@@ -12,6 +12,7 @@ type Service interface {
 	AddDebtsByAliases(groupID model.GroupID, debts ...DebtWithAliases) error
 	// AddDebts(groupID model.GroupID, debts ...*model.Debt) error
 	CalculateDebts(groupID model.GroupID) ([]FinalDebt, error)
+	FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]*model.Debt, error)
 }
 
 var ErrParticipantNotFound = errors.New("participant not found")
@@ -137,4 +138,18 @@ func (s *service) composeFinalDebts(debts []calculatedDebt, partics model.Partic
 		final = append(final, fDebt)
 	}
 	return
+}
+
+func (s *service) FindDebts(groupID model.GroupID, pID model.ParticipantID) ([]*model.Debt, error) {
+	allDebts, err := s.debts.FindAll(groupID)
+	if err != nil {
+		return nil, err
+	}
+	selected := []*model.Debt{}
+	for _, d := range allDebts {
+		if d.BorrowerID == pID || d.LenderID == pID {
+			selected = append(selected, d)
+		}
+	}
+	return selected, nil
 }

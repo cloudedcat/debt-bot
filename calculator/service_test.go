@@ -77,3 +77,20 @@ func TestCalculateDebts(t *testing.T) {
 		}
 	}
 }
+
+func TestFindDebts(t *testing.T) {
+	db := testOpen(t)
+	addGroup(t, db)
+	addParticipants(t, db)
+	debts, partics := bunt.NewDebtRepository(db), bunt.NewParticipantRepository(db)
+	service := NewService(debts, partics)
+	addDebtsViaService(t, service)
+	p := testset.Participants[0] // ck
+	expectedDebtLen := 2
+
+	got, err := service.FindDebts(testset.GroupID, p.ID)
+	testset.FatalOnError(t, err, "failed to find debts")
+	if len(got) != expectedDebtLen {
+		t.Fatal("Final debt has an empty Alias or zero Amount")
+	}
+}
