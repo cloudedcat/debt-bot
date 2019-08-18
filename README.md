@@ -2,7 +2,7 @@
 
 Telegram bot for recording restaurant bills and split them with participants efficiently
 
-![Add bot](img/add_bot_example.png?raw=true) ![Reg command](img/reg_example.png?raw=true) ![Share command](img/share_example.png?raw=true)
+![Reg command](img/reg_example.png?raw=true) ![Share command](img/share_example.png?raw=true)
 
 ## Commands
 
