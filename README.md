@@ -24,3 +24,21 @@ Telegram bot for recording restaurant bills and split them with participants eff
 
 * `history` - shows personal history of debts
 * `amnesty` - wipe off all debts, be careful!
+
+## How to start your own server
+
+* git clone git@github.com:cloudedcat/debt-bot.git
+* get Token from @BotFather
+* set up empty fields in `config.go`
+* `go build && ./debt_bot`
+
+### If you want to start Bot as a systemd service
+
+* customize `User` and `ExecStart` in `debt_bot.service`
+* exec
+
+ ``` bash
+ sudo cp debt_bot.service /etc/systemd/system/
+ sudo systemctl enable debt_bot
+ sudo systemctl start debt_bot
+ ```

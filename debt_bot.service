@@ -1,0 +1,15 @@
+[Unit]
+Description=Telegram debt bot service
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=cat
+ExecStart=/home/cat/go/bin/debt-bot
+
+[Install]
+WantedBy=multi-user.target
